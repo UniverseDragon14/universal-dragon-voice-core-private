@@ -1,0 +1,36 @@
+{
+  "schema": "novakutty.intent-proof.receipt.v1",
+  "generated_utc": "2026-07-21T16:45:04Z",
+  "creator_owner": "UNIVERSAL_DRAGON_ASLAM",
+  "product": "NOVAKUTTY",
+  "core": "QBIT_NOVA_C",
+  "truth_boundary": {
+    "runtime": "SOFTWARE_VIRTUAL_QCPU",
+    "host": "CLASSICAL_CPU",
+    "physical_qpu_present": false,
+    "arbitrary_shell": "DENY",
+    "root_action": "DENY",
+    "kernel_module": "DENY",
+    "device_node_creation": "DENY"
+  },
+  "result": {
+    "intent": "UNKNOWN",
+    "decision": "REJECTED",
+    "executed": false,
+    "status": "PASS",
+    "reason": "The request did not match the fixed Novakutty allowlist.",
+    "markers": [
+      "ALLOWLIST=STATUS,GHZ,APPROVAL_DEMO,REJECTION_DEMO",
+      "ARBITRARY_SHELL=DENY",
+      "EXECUTED=NO"
+    ],
+    "runtime_output": "",
+    "explanation": "NOVA could not map the request to an approved operation. Nothing was executed. Use status, GHZ, safe approval, or unsafe rejection demonstrations.",
+    "received_request": "Who"
+  },
+  "evidence_digest": {
+    "algorithm": "SHA-256",
+    "value": "2e2ec86c97bd1de30180753cd797b09b5e0795828dd3822a460a381c2cbfb6d4",
+    "note": "Evidence digest only; not a digital signature."
+  }
+}

@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
+  <meta
+    name="description"
+    content="Universal Dragon Voice Core — secure multilingual voice assistant interface."
+  >
+  <title>Universal Dragon Voice Core</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #020617;
+      --panel: rgba(15, 23, 42, 0.88);
+      --panel-strong: #0f172a;
+      --line: rgba(16, 185, 129, 0.25);
+      --green: #34d399;
+      --green-dark: #059669;
+      --teal: #2dd4bf;
+      --red: #fb7185;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100dvh;
+      background:
+        radial-gradient(circle at top, rgba(5, 150, 105, 0.13), transparent 34rem),
+        var(--bg);
+      color: var(--text);
+      font-family:
+        Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+      display: flex;
+      flex-direction: column;
+    }
+
+    button,
+    textarea,
+    select {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+    }
+
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1rem clamp(1rem, 4vw, 2rem);
+      border-bottom: 1px solid var(--line);
+      background: rgba(2, 6, 23, 0.86);
+      backdrop-filter: blur(18px);
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      min-width: 0;
+    }
+
+    .online-dot {
+      width: 0.75rem;
+      height: 0.75rem;
+      flex: 0 0 auto;
+      border-radius: 999px;
+      background: var(--green);
+      box-shadow: 0 0 18px var(--green);
+    }
+
+    .brand {
+      margin: 0;
+      color: var(--green);
+      font-size: clamp(0.95rem, 3.5vw, 1.25rem);
+      letter-spacing: 0.08em;
+    }
+
+    .version {
+      display: block;
+      margin-top: 0.2rem;
+      color: var(--muted);
+      font-size: 0.7rem;
+      letter-spacing: 0.04em;
+    }
+
+    .status {
+      white-space: nowrap;
+      border: 1px solid rgba(52, 211, 153, 0.4);
+      border-radius: 999px;
+      padding: 0.45rem 0.75rem;
+      background: rgba(6, 78, 59, 0.35);
+      color: #a7f3d0;
+      font: 700 0.7rem ui-monospace, monospace;
+    }
+
+    .status.listening {
+      border-color: rgba(251, 113, 133, 0.5);
+      background: rgba(136, 19, 55, 0.35);
+      color: #fecdd3;
+    }
+
+    .main {
+      width: min(900px, 100%);
+      margin: auto;
+      padding: 2rem clamp(1rem, 4vw, 2rem);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .intro {
+      max-width: 640px;
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    .intro h2 {
+      margin: 0 0 0.5rem;
+      font-size: clamp(1.5rem, 5vw, 2.5rem);
+    }
+
+    .intro p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .orb-wrap {
+      padding: 2rem;
+    }
+
+    .orb {
+      width: clamp(165px, 44vw, 225px);
+      aspect-ratio: 1;
+      padding: 0.8rem;
+      border-radius: 50%;
+      cursor: pointer;
+      color: inherit;
+      background:
+        linear-gradient(145deg, #064e3b, var(--green-dark), var(--teal));
+      box-shadow:
+        0 0 35px rgba(16, 185, 129, 0.45),
+        0 0 90px rgba(16, 185, 129, 0.18);
+      animation: orbPulse 3s ease-in-out infinite;
+      transition:
+        transform 180ms ease,
+        background 180ms ease,
+        box-shadow 180ms ease;
+    }
+
+    .orb:active {
+      transform: scale(0.97);
+    }
+
+    .orb.listening {
+      background: linear-gradient(145deg, #881337, #e11d48, #fb7185);
+      box-shadow:
+        0 0 40px rgba(244, 63, 94, 0.6),
+        0 0 100px rgba(244, 63, 94, 0.3);
+      animation: listeningPulse 1.25s ease-in-out infinite;
+    }
+
+    .orb-inner {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: rgba(2, 6, 23, 0.93);
+      display: grid;
+      place-items: center;
+      align-content: center;
+      gap: 0.7rem;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .orb-icon {
+      font-size: clamp(2.3rem, 9vw, 3.6rem);
+    }
+
+    .orb-label {
+      max-width: 85%;
+      color: var(--green);
+      font: 700 0.75rem ui-monospace, monospace;
+      text-align: center;
+    }
+
+    .orb.listening .orb-label {
+      color: #fecdd3;
+    }
+
+    .toolbar {
+      width: min(640px, 100%);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.8rem;
+      margin-bottom: 1rem;
+    }
+
+    select,
+    textarea {
+      width: 100%;
+      color: var(--text);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      background: rgba(15, 23, 42, 0.88);
+      border-radius: 0.85rem;
+      outline: none;
+    }
+
+    select {
+      padding: 0.85rem 1rem;
+    }
+
+    textarea {
+      min-height: 105px;
+      padding: 1rem;
+      line-height: 1.5;
+      resize: vertical;
+    }
+
+    select:focus,
+    textarea:focus {
+      border-color: rgba(52, 211, 153, 0.7);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
+    }
+
+    .button-row {
+      width: min(640px, 100%);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin: 1rem 0;
+    }
+
+    .button {
+      min-height: 47px;
+      border-radius: 0.85rem;
+      padding: 0.8rem 1rem;
+      cursor: pointer;
+      font-weight: 800;
+      transition:
+        transform 150ms ease,
+        opacity 150ms ease;
+    }
+
+    .button:active {
+      transform: scale(0.97);
+    }
+
+    .button:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    .button-primary {
+      flex: 1 1 180px;
+      background: var(--green);
+      color: #022c22;
+    }
+
+    .button-secondary {
+      flex: 1 1 150px;
+      background: #1e293b;
+      color: var(--text);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+    }
+
+    .button-danger {
+      background: #be123c;
+      color: white;
+    }
+
+    .card {
+      width: min(640px, 100%);
+      margin-top: 0.8rem;
+      padding: 1rem;
+      border: 1px solid rgba(148, 163, 184, 0.17);
+      border-radius: 1rem;
+      background: var(--panel);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
+    }
+
+    .card.ai {
+      border-color: var(--line);
+    }
+
+    .card-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.8rem;
+      color: var(--muted);
+      font: 700 0.72rem ui-monospace, monospace;
+    }
+
+    .card.ai .card-head {
+      color: var(--green);
+    }
+
+    .card p {
+      min-height: 2.6rem;
+      margin: 0;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .notice {
+      width: min(640px, 100%);
+      margin-top: 1rem;
+      padding: 0.8rem 1rem;
+      border-left: 3px solid var(--green-dark);
+      background: rgba(6, 78, 59, 0.18);
+      color: #a7f3d0;
+      font-size: 0.8rem;
+      line-height: 1.5;
+    }
+
+    .footer {
+      padding: 1rem;
+      border-top: 1px solid rgba(15, 23, 42, 0.9);
+      color: var(--muted);
+      text-align: center;
+      font: 0.7rem ui-monospace, monospace;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @keyframes orbPulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.055);
+      }
+    }
+
+    @keyframes listeningPulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+      50% {
+        transform: scale(1.1);
+      }
+    }
+
+    @media (max-width: 520px) {
+      .status {
+        max-width: 110px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .toolbar {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="header">
+    <div class="brand-row">
+      <div class="online-dot" aria-hidden="true"></div>
+
+      <div>
+        <h1 class="brand">UNIVERSAL DRAGON</h1>
+        <span class="version">VOICE CORE v3.0 — SECURE FRONTEND</span>
+      </div>
+    </div>
+
+    <div id="statusBadge" class="status" role="status">
+      SYSTEM READY
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="intro">
+      <h2>NOVA Voice Interface</h2>
+      <p>
+        Speak or type your request. API credentials remain on the secure
+        backend and are never exposed inside this webpage.
+      </p>
+    </section>
+
+    <div class="orb-wrap">
+      <button
+        id="voiceOrb"
+        class="orb"
+        type="button"
+        aria-label="Start voice recognition"
+      >
+        <span class="orb-inner">
+          <span id="orbIcon" class="orb-icon" aria-hidden="true">🎙️</span>
+          <span id="orbText" class="orb-label">
+            Tap to speak
+          </span>
+        </span>
+      </button>
+    </div>
+
+    <div class="toolbar">
+      <select id="languageSelect" aria-label="Speech language">
+        <option value="en-US">English</option>
+        <option value="ta-IN">தமிழ் — Tamil</option>
+        <option value="ml-IN">മലയാളം — Malayalam</option>
+      </select>
+
+      <button id="clearBtn" class="button button-secondary" type="button">
+        Clear
+      </button>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <span>YOUR INPUT</span>
+        <span id="speechState">Waiting</span>
+      </div>
+
+      <textarea
+        id="promptInput"
+        maxlength="2000"
+        placeholder="Speak using the microphone, or type your request here..."
+        aria-label="Your voice or text request"
+      ></textarea>
+    </div>
+
+    <div class="button-row">
+      <button id="micBtn" class="button button-primary" type="button">
+        🎙️ Start Voice Input
+      </button>
+
+      <button id="sendBtn" class="button button-secondary" type="button">
+        ➤ Send Request
+      </button>
+
+      <button
+        id="stopAudioBtn"
+        class="button button-danger hidden"
+        type="button"
+      >
+        ■ Stop Audio
+      </button>
+    </div>
+
+    <div class="card ai">
+      <div class="card-head">
+        <span>NOVA RESPONSE</span>
+        <span id="aiState">Inactive</span>
+      </div>
+
+      <p id="aiResponseText" aria-live="polite">
+        Your secure AI response will appear here.
+      </p>
+    </div>
+
+    <div id="systemNotice" class="notice">
+      Approval-first boundary: this frontend sends text only to
+      <code>/api/voice</code>. No API key is stored in the browser.
+    </div>
+  </main>
+
+  <footer class="footer">
+    Universal Dragon AI System © 2026 · Secure backend connection required
+  </footer>
+
+  <script>
+    "use strict";
+
+    const elements = {
+      micBtn: document.getElementById("micBtn"),
+      sendBtn: document.getElementById("sendBtn"),
+      clearBtn: document.getElementById("clearBtn"),
+      stopAudioBtn: document.getElementById("stopAudioBtn"),
+      voiceOrb: document.getElementById("voiceOrb"),
+      orbIcon: document.getElementById("orbIcon"),
+      orbText: document.getElementById("orbText"),
+      promptInput: document.getElementById("promptInput"),
+      aiResponseText: document.getElementById("aiResponseText"),
+      statusBadge: document.getElementById("statusBadge"),
+      speechState: document.getElementById("speechState"),
+      aiState: document.getElementById("aiState"),
+      languageSelect: document.getElementById("languageSelect"),
+      systemNotice: document.getElementById("systemNotice")
+    };
+
+    const SpeechRecognitionClass =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const synth = window.speechSynthesis;
+    let recognition = null;
+    let isListening = false;
+    let isBusy = false;
+
+    function setStatus(label, listening = false) {
+      elements.statusBadge.textContent = label;
+      elements.statusBadge.classList.toggle("listening", listening);
+    }
+
+    function setListeningState(listening) {
+      isListening = listening;
+
+      elements.voiceOrb.classList.toggle("listening", listening);
+      elements.statusBadge.classList.toggle("listening", listening);
+
+      if (listening) {
+        elements.orbIcon.textContent = "〽️";
+        elements.orbText.textContent = "Listening...";
+        elements.micBtn.textContent = "■ Stop Listening";
+        elements.speechState.textContent = "Listening";
+        setStatus("LISTENING", true);
+      } else {
+        elements.orbIcon.textContent = "🎙️";
+        elements.orbText.textContent = "Tap to speak";
+        elements.micBtn.textContent = "🎙️ Start Voice Input";
+        elements.speechState.textContent = "Waiting";
+
+        if (!isBusy) {
+          setStatus("SYSTEM READY");
+        }
+      }
+    }
+
+    function showNotice(message, isError = false) {
+      elements.systemNotice.textContent = message;
+      elements.systemNotice.style.borderLeftColor =
+        isError ? "#fb7185" : "#059669";
+      elements.systemNotice.style.color =
+        isError ? "#fecdd3" : "#a7f3d0";
+    }
+
+    if (SpeechRecognitionClass) {
+      recognition = new SpeechRecognitionClass();
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.maxAlternatives = 1;
+
+      recognition.addEventListener("start", () => {
+        setListeningState(true);
+      });
+
+      recognition.addEventListener("result", (event) => {
+        let combinedTranscript = "";
+        let hasFinalResult = false;
+
+        for (let index = event.resultIndex; index < event.results.length; index++) {
+          const result = event.results[index];
+          combinedTranscript += result[0]?.transcript || "";
+
+          if (result.isFinal) {
+            hasFinalResult = true;
+          }
+        }
+
+        elements.promptInput.value = combinedTranscript.trim();
+
+        if (hasFinalResult && elements.promptInput.value) {
+          elements.speechState.textContent = "Captured";
+        }
+      });
+
+      recognition.addEventListener("error", (event) => {
+        console.error("Speech recognition error:", event.error);
+        setListeningState(false);
+
+        const safeMessages = {
+          "not-allowed": "Microphone permission was denied.",
+          "audio-capture": "No working microphone was detected.",
+          "network": "Speech recognition network error.",
+          "no-speech": "No speech was detected."
+        };
+
+        const message =
+          safeMessages[event.error] ||
+          "Speech recognition could not complete.";
+
+        elements.speechState.textContent = "Error";
+        showNotice(message, true);
+      });
+
+      recognition.addEventListener("end", () => {
+        setListeningState(false);
+      });
+    } else {
+      elements.micBtn.disabled = true;
+      elements.voiceOrb.disabled = true;
+      elements.speechState.textContent = "Typing mode";
+      showNotice(
+        "Voice recognition is unavailable in this browser. Text input still works.",
+        true
+      );
+    }
+
+    function toggleListening() {
+      if (!recognition || isBusy) {
+        return;
+      }
+
+      if (synth?.speaking) {
+        synth.cancel();
+      }
+
+      if (isListening) {
+        recognition.stop();
+        return;
+      }
+
+      recognition.lang = elements.languageSelect.value;
+
+      try {
+        recognition.start();
+      } catch (error) {
+        console.error("Microphone start error:", error);
+      }
+    }
+
+    function sleep(milliseconds) {
+      return new Promise((resolve) => {
+        window.setTimeout(resolve, milliseconds);
+      });
+    }
+
+    async function requestVoiceResponse(message) {
+      const retryDelays = [0, 1000, 2500];
+      let lastError = null;
+
+      for (let attempt = 0; attempt < retryDelays.length; attempt++) {
+        if (retryDelays[attempt] > 0) {
+          await sleep(retryDelays[attempt]);
+        }
+
+        const controller = new AbortController();
+        const timeoutId = window.setTimeout(() => controller.abort(), 20000);
+
+        try {
+          const response = await fetch("/api/voice", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json"
+            },
+            body: JSON.stringify({
+              message,
+              language: elements.languageSelect.value
+            }),
+            signal: controller.signal
+          });
+
+          window.clearTimeout(timeoutId);
+
+          const retryable =
+            response.status === 429 || response.status >= 500;
+
+          if (!response.ok) {
+            let serverMessage = "";
+
+            try {
+              const errorData = await response.json();
+              serverMessage =
+                typeof errorData?.error === "string"
+                  ? errorData.error
+                  : "";
+            } catch {
+              serverMessage = "";
+            }
+
+            const error = new Error(
+              serverMessage || `Backend returned HTTP ${response.status}.`
+            );
+
+            if (!retryable || attempt === retryDelays.length - 1) {
+              throw error;
+            }
+
+            lastError = error;
+            continue;
+          }
+
+          const data = await response.json();
+          const answer =
+            typeof data?.reply === "string"
+              ? data.reply.trim()
+              : "";
+
+          if (!answer) {
+            throw new Error("Backend returned an empty response.");
+          }
+
+          return answer;
+        } catch (error) {
+          window.clearTimeout(timeoutId);
+
+          lastError =
+            error?.name === "AbortError"
+              ? new Error("The backend request timed out.")
+              : error;
+
+          if (attempt === retryDelays.length - 1) {
+            throw lastError;
+          }
+        }
+      }
+
+      throw lastError || new Error("Voice request failed.");
+    }
+
+    async function processRequest() {
+      const message = elements.promptInput.value.trim();
+
+      if (!message || isBusy) {
+        if (!message) {
+          showNotice("Speak or type a request before sending.", true);
+        }
+        return;
+      }
+
+      isBusy = true;
+      elements.sendBtn.disabled = true;
+      elements.micBtn.disabled = true;
+      elements.aiState.textContent = "Processing";
+      elements.aiResponseText.textContent =
+        "NOVA is processing your request...";
+      setStatus("PROCESSING");
+
+      try {
+        const reply = await requestVoiceResponse(message);
+
+        elements.aiResponseText.textContent = reply;
+        elements.aiState.textContent = "Ready";
+        setStatus("RESPONSE READY");
+        showNotice("Secure response received from /api/voice.");
+
+        speakResponse(reply);
+      } catch (error) {
+        console.error("Voice API error:", error);
+
+        const messageText =
+          error instanceof Error
+            ? error.message
+            : "The secure voice backend is unavailable.";
+
+        elements.aiResponseText.textContent =
+          "Backend not connected: " + messageText;
+
+        elements.aiState.textContent = "Backend offline";
+        setStatus("BACKEND OFFLINE");
+        showNotice(
+          "Frontend is working. The secure /api/voice backend must be connected next.",
+          true
+        );
+      } finally {
+        isBusy = false;
+        elements.sendBtn.disabled = false;
+        elements.micBtn.disabled = !recognition;
+      }
+    }
+
+    function speakResponse(text) {
+      if (!synth || !text) {
+        return;
+      }
+
+      synth.cancel();
+
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = elements.languageSelect.value;
+      utterance.rate = 1;
+      utterance.pitch = 1;
+      utterance.volume = 1;
+
+      utterance.addEventListener("start", () => {
+        elements.stopAudioBtn.classList.remove("hidden");
+        elements.orbIcon.textContent = "🔊";
+        elements.aiState.textContent = "Speaking";
+      });
+
+      utterance.addEventListener("end", () => {
+        elements.stopAudioBtn.classList.add("hidden");
+        elements.orbIcon.textContent = "🎙️";
+        elements.aiState.textContent = "Completed";
+        setStatus("SYSTEM READY");
+      });
+
+      utterance.addEventListener("error", (event) => {
+        console.error("Speech synthesis error:", event.error);
+        elements.stopAudioBtn.classList.add("hidden");
+        elements.orbIcon.textContent = "🎙️";
+        elements.aiState.textContent = "Audio unavailable";
+      });
+
+      synth.speak(utterance);
+    }
+
+    elements.micBtn.addEventListener("click", toggleListening);
+    elements.voiceOrb.addEventListener("click", toggleListening);
+    elements.sendBtn.addEventListener("click", processRequest);
+
+    elements.stopAudioBtn.addEventListener("click", () => {
+      synth?.cancel();
+      elements.stopAudioBtn.classList.add("hidden");
+      elements.orbIcon.textContent = "🎙️";
+      elements.aiState.textContent = "Audio stopped";
+      setStatus("SYSTEM READY");
+    });
+
+    elements.clearBtn.addEventListener("click", () => {
+      recognition?.abort();
+      synth?.cancel();
+
+      elements.promptInput.value = "";
+      elements.aiResponseText.textContent =
+        "Your secure AI response will appear here.";
+      elements.aiState.textContent = "Inactive";
+      elements.speechState.textContent = "Waiting";
+      elements.stopAudioBtn.classList.add("hidden");
+
+      setListeningState(false);
+      setStatus("SYSTEM READY");
+      showNotice(
+        "Approval-first boundary: this frontend sends text only to /api/voice. No API key is stored in the browser."
+      );
+
+      elements.promptInput.focus();
+    });
+
+    elements.promptInput.addEventListener("keydown", (event) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+        event.preventDefault();
+        processRequest();
+      }
+    });
+
+    elements.languageSelect.addEventListener("change", () => {
+      if (recognition) {
+        recognition.lang = elements.languageSelect.value;
+      }
+    });
+  </script>
+</body>
+</html>

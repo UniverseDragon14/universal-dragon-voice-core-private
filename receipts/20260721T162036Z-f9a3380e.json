@@ -1,0 +1,36 @@
+{
+  "schema": "novakutty.intent-proof.receipt.v1",
+  "generated_utc": "2026-07-21T16:20:36Z",
+  "creator_owner": "UNIVERSAL_DRAGON_ASLAM",
+  "product": "NOVAKUTTY",
+  "core": "QBIT_NOVA_C",
+  "truth_boundary": {
+    "runtime": "SOFTWARE_VIRTUAL_QCPU",
+    "host": "CLASSICAL_CPU",
+    "physical_qpu_present": false,
+    "arbitrary_shell": "DENY",
+    "root_action": "DENY",
+    "kernel_module": "DENY",
+    "device_node_creation": "DENY"
+  },
+  "result": {
+    "intent": "STATUS",
+    "decision": "APPROVED",
+    "executed": true,
+    "status": "PASS",
+    "reason": "Read-only repository and runtime status inspection.",
+    "markers": [
+      "GIT_HEAD=87627a7",
+      "WORKING_TREE=CLEAN",
+      "BOUNDARY=SOFTWARE_VIRTUAL_QCPU",
+      "PHYSICAL_QPU_PRESENT=NO"
+    ],
+    "runtime_output": "GIT_HEAD=87627a7\nWORKING_TREE=CLEAN",
+    "explanation": "NOVA performed a read-only status check. No workload, root action, kernel operation, or device-node action was used."
+  },
+  "evidence_digest": {
+    "algorithm": "SHA-256",
+    "value": "403b703344c12487739d2ecb91fb8884688cf83f4b5a1d1d052b110b827286d4",
+    "note": "Evidence digest only; not a digital signature."
+  }
+}

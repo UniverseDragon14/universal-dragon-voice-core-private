@@ -1,0 +1,36 @@
+{
+  "schema": "novakutty.intent-proof.receipt.v1",
+  "generated_utc": "2026-07-21T22:21:52Z",
+  "creator_owner": "UNIVERSAL_DRAGON_ASLAM",
+  "product": "NOVAKUTTY",
+  "core": "QBIT_NOVA_C",
+  "truth_boundary": {
+    "runtime": "SOFTWARE_VIRTUAL_QCPU",
+    "host": "CLASSICAL_CPU",
+    "physical_qpu_present": false,
+    "arbitrary_shell": "DENY",
+    "root_action": "DENY",
+    "kernel_module": "DENY",
+    "device_node_creation": "DENY"
+  },
+  "result": {
+    "intent": "APPROVAL_DEMO",
+    "decision": "APPROVED",
+    "executed": false,
+    "status": "PASS",
+    "reason": "The bounded standard workload satisfied the admission policy. This demo performs admission only; it does not execute the workload.",
+    "markers": [
+      "STANDARD_ADMISSION=ADMIT_WORKLOAD",
+      "POLICY=PASS",
+      "OWNER_APPROVAL=REQUIRED",
+      "ARBITRARY_SHELL=DENY"
+    ],
+    "runtime_output": "=== QCPU WORKLOAD ADMISSION CONTROLLER ===\n\n=== STEP 1: RUN RUNTIME POLICY ENGINE ===\nQCPU_STANDARD_DECISION=ALLOW_STANDARD_WORKLOAD\nQCPU_HEAVY_DECISION=BLOCK_HEAVY_WORKLOAD\nQCPU_FINAL_POLICY=ALLOW_STANDARD_WORKLOAD\nPASS: NON_DESTRUCTIVE_RUNTIME_POLICY_ENGINE\n| Standard workload | shots=20 loops=5 | ALLOW_STANDARD_WORKLOAD | PASS: STANDARD_WORKLOAD_ALLOWED |\n| Heavy workload | shots=1000 loops=200 | BLOCK_HEAVY_WORKLOAD | PASS: HEAVY_WORKLOAD_BLOCKED |\n| Final policy | mode=STANDARD_VIRTUAL_QCPU_MODE | ALLOW_STANDARD_WORKLOAD | PASS: STANDARD_POLICY_ACTIVE |\nQCPU_STANDARD_DECISION=ALLOW_STANDARD_WORKLOAD\nQCPU_HEAVY_DECISION=BLOCK_HEAVY_WORKLOAD\nQCPU_FINAL_POLICY=ALLOW_STANDARD_WORKLOAD\n    ALLOW_STANDARD_WORKLOAD\n    BLOCK_HEAVY_WORKLOAD\n    ALLOW_STANDARD_WORKLOAD\n    PASS: NON_DESTRUCTIVE_RUNTIME_POLICY_ENGINE\nQCPU RUNTIME POLICY ENGINE READY\nQCPU RUNTIME POLICY ENGINE READY\n\n=== STEP 2: READ POLICY AND LIMITS ===\nmode: STANDARD_VIRTUAL_QCPU_MODE\nstandard decision: ALLOW_STANDARD_WORKLOAD\nheavy decision: BLOCK_HEAVY_WORKLOAD\nfinal policy: ALLOW_STANDARD_WORKLOAD\nmax shots: 100\nmax proof loops: 20\nmax parallel jobs: 1\n\n=== STEP 3: EVALUATE WORKLOAD REQUESTS ===\nstandard_bell_proof: ADMIT_WORKLOAD\nPASS: STANDARD_WORKLOAD_ADMITTED\nheavy_1000_shot_run: REJECT_WORKLOAD\nPASS: HEAVY_WORKLOAD_REJECTED\nPASS: WORKLOAD_ADMISSION_POLICY_ENFORCED\n\n=== STEP 4: WRITE ADMISSION ENV ===\nQCPU_STANDARD_ADMISSION=ADMIT_WORKLOAD\nQCPU_STANDARD_ADMISSION_STATUS=PASS: STANDARD_WORKLOAD_ADMITTED\nQCPU_HEAVY_ADMISSION=REJECT_WORKLOAD\nQCPU_HEAVY_ADMISSION_STATUS=PASS: HEAVY_WORKLOAD_REJECTED\nQCPU_ADMISSION_CONTROLLER_STATUS=PASS: WORKLOAD_ADMISSION_POLICY_ENFORCED\n\n=== STEP 5: CORE MUTATION CHECK ===\nPASS: CORE_NOT_MUTATED_BY_WORKLOAD_ADMISSION\nPASS: NON_DESTRUCTIVE_WORKLOAD_ADMISSION_CONTROLLER\n\n=== WORKLOAD ADMISSION REPORT CREATED ===\n-rw-rw-r-- 1 aslam aslam 2.6K Jul 22 02:21 build/qcpu_workload_admission.md\n-rw------- 1 aslam aslam 492 Jul 22 02:21 .qcpu/workload_admission.env\n\n=== REPORT PREVIEW ===\n# QCPU Workload Admission Controller\n\nGenerated UTC: 2026-07-21T22:21:52Z\n\n## Host\n\n| Field | Value |\n|---|---|\n| Host | nova-pi |\n| Architecture | aarch64 |\n| Kernel | 6.18.34+rpt-rpi-2712 |\n| Commit | 87627a7 docs: finalize Devpost submission evidence |\n\n## Policy Read\n\n| Field | Value |\n|---|---|\n| QCPU mode | STANDARD_VIRTUAL_QCPU_MODE |\n| Final policy | ALLOW_STANDARD_WORKLOAD |\n| Policy status | PASS: STANDARD_POLICY_ACTIVE |\n| Max shots | 100 |\n| Max proof loops | 20 |\n| Max parallel jobs | 1 |\n\n## Workload Admission Decisions\n\n| Workload | Request | Admission | Status |\n|---|---|---|---|\n| standard_bell_proof | shots=20 loops=5 parallel=1 | ADMIT_WORKLOAD | PASS: STANDARD_WORKLOAD_ADMITTED |\n| heavy_1000_shot_run | shots=1000 loops=200 parallel=1 | REJECT_WORKLOAD | PASS: HEAVY_WORKLOAD_REJECTED |\n\n## Admission Env\n\n```text\nQCPU_ADMISSION_MODE=STANDARD_VIRTUAL_QCPU_MODE\nQCPU_FINAL_POLICY=ALLOW_STANDARD_WORKLOAD\nQCPU_STANDARD_WORKLOAD=standard_bell_proof\nQCPU_STANDARD_ADMISSION=ADMIT_WORKLOAD\nQCPU_STANDARD_ADMISSION_STATUS=PASS: STANDARD_WORKLOAD_ADMITTED\nQCPU_HEAVY_WORKLOAD=heavy_1000_shot_run\nQCPU_HEAVY_ADMISSION=REJECT_WORKLOAD\nQCPU_HEAVY_ADMISSION_STATUS=PASS: HEAVY_WORKLOAD_REJECTED\nQCPU_ADMISSION_CONTROLLER_STATUS=PASS: WORKLOAD_ADMISSION_POLICY_ENFORCED\nQCPU_ADMISSION_CREATED_UTC=2026-07-21T22:21:52Z\n```\n\n## Runtime Policy Engine Summary\n\n```text\nQCPU_STANDARD_DECISION=ALLOW_STANDARD_WORKLOAD\nQCPU_HEAVY_DECISION=BLOCK_HEAVY_WORKLOAD\nQCPU_FINAL_POLICY=ALLOW_STANDARD_WORKLOAD\nPASS: NON_DESTRUCTIVE_RUNTIME_POLICY_ENGINE\n| Standard workload | shots=20 loops=5 | ALLOW_STANDARD_WORKLOAD | PASS: STANDARD_WORKLOAD_ALLOWED |\n| Heavy workload | shots=1000 loops=200 | BLOCK_HEAVY_WORKLOAD | PASS: HEAVY_WORKLOAD_BLOCKED |\n| Final policy | mode=STANDARD_VIRTUAL_QCPU_MODE | ALLOW_STANDARD_WORKLOAD | PASS: STANDARD_POLICY_ACTIVE |\nQCPU_STANDARD_DECISION=ALLOW_STANDARD_WORKLOAD\nQCPU_HEAVY_DECISION=BLOCK_HEAVY_WORKLOAD\nQCPU_FINAL_POLICY=ALLOW_STANDARD_WORKLOAD\n    ALLOW_STANDARD_WORKLOAD\n    BLOCK_HEAVY_WORKLOAD\n    ALLOW_STANDARD_WORKLOAD\n    PASS: NON_DESTRUCTIVE_RUNTIME_POLICY_ENGINE\nQCPU RUNTIME POLICY ENGINE READY\nQCPU RUNTIME POLICY ENGINE READY\n```\n\n## Boundary Statement\n\nThe admission controller is software-only.\n\nIt does not mutate hardware.\n\nStandard workload:\n\n    ADMIT_WORKLOAD\n\nHeavy workload:\n\n    REJECT_WORKLOAD\n\nController status:\n\n    PASS: WORKLOAD_ADMISSION_POLICY_ENFORCED\n\nCore status:\n\n    PASS: CORE_NOT_MUTATED_BY_WORKLOAD_ADMISSION\n\nSafety:\n\n    PASS: NON_DESTRUCTIVE_WORKLOAD_ADMISSION_CONTROLLER\n\n## Verdict\n\nQCPU WORKLOAD ADMISSION CONTROLLER READY\n\nQCPU WORKLOAD ADMISSION CONTROLLER READY",
+    "explanation": "NOVA evaluated the request against fixed workload limits. The standard workload was admitted, but execution remains a separate controlled step."
+  },
+  "evidence_digest": {
+    "algorithm": "SHA-256",
+    "value": "6e57855da210a2908cffaa6531d8d271a69eb3b34f31371d6095d03313bf6e9d",
+    "note": "Evidence digest only; not a digital signature."
+  }
+}

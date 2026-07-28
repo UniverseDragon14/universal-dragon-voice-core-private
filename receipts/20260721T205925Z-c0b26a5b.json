@@ -1,0 +1,36 @@
+{
+  "schema": "novakutty.intent-proof.receipt.v1",
+  "generated_utc": "2026-07-21T20:59:25Z",
+  "creator_owner": "UNIVERSAL_DRAGON_ASLAM",
+  "product": "NOVAKUTTY",
+  "core": "QBIT_NOVA_C",
+  "truth_boundary": {
+    "runtime": "SOFTWARE_VIRTUAL_QCPU",
+    "host": "CLASSICAL_CPU",
+    "physical_qpu_present": false,
+    "arbitrary_shell": "DENY",
+    "root_action": "DENY",
+    "kernel_module": "DENY",
+    "device_node_creation": "DENY"
+  },
+  "result": {
+    "intent": "GHZ",
+    "decision": "APPROVED",
+    "executed": true,
+    "status": "PASS",
+    "reason": "Bounded allowlisted 3-qbit GHZ proof with 20 runs.",
+    "markers": [
+      "QUBITS=3",
+      "RUNS=20",
+      "GHZ=PASS",
+      "BOUNDARY=SOFTWARE_VIRTUAL_QCPU"
+    ],
+    "runtime_output": "=== GHZ STATE CORRELATION PROOF ===\nboundary: software virtual QCPU, not physical quantum hardware\nqubits: 3\nruns: 20\n\n=== BUILD GHZ STATEN CORE ===\nPASS: GHZ_BUILD_READY\n\nrun 1: |000> OK\nrun 2: |000> OK\nrun 3: |111> OK\nrun 4: |000> OK\nrun 5: |111> OK\nrun 6: |000> OK\nrun 7: |111> OK\nrun 8: |111> OK\nrun 9: |000> OK\nrun 10: |000> OK\nrun 11: |111> OK\nrun 12: |000> OK\nrun 13: |111> OK\nrun 14: |111> OK\nrun 15: |000> OK\nrun 16: |000> OK\nrun 17: |111> OK\nrun 18: |000> OK\nrun 19: |111> OK\nrun 20: |111> OK\n\n=== RESULT ===\nallowed: |000> and |111>\nzero count: 10\none count: 10\nbad count: 0\nGHZ PROOF PASSED\nOnly |000> and |111> appeared.\n\n=== GHZ REPORT CREATED ===\n-rw------- 1 aslam aslam 297 Jul 22 00:59 .qcpu/ghz_proof.env\n-rw-rw-r-- 1 aslam aslam 776 Jul 22 00:59 build/qcpu_ghz_proof.md\n-rw-rw-r-- 1 aslam aslam 462 Jul 22 00:59 logs/qcpu_ghz_proof.log\n\n=== GHZ VERDICT ===\nPASS: QCPU_GHZ_PROOF_READY",
+    "explanation": "NOVA approved a bounded GHZ proof. QBIT NOVA C executed the proof on a classical CPU and checked that only valid GHZ-correlated outcomes were produced."
+  },
+  "evidence_digest": {
+    "algorithm": "SHA-256",
+    "value": "a9f576a6563fe5e04f580f726dbea5e19ac7698801005f4c1ee32a753d79bf00",
+    "note": "Evidence digest only; not a digital signature."
+  }
+}

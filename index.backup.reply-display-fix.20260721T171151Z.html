@@ -1,0 +1,2950 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, viewport-fit=cover"
+  >
+
+  <meta
+    name="description"
+    content="Novakutty turns natural-language compute requests into approved or rejected QBIT NOVA C workloads and produces reproducible evidence."
+  >
+
+  <title>Novakutty — Intent-to-Proof Console</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+
+      --bg: #020617;
+      --bg-soft: #07111f;
+      --panel: rgba(15, 23, 42, 0.84);
+      --panel-strong: rgba(15, 23, 42, 0.97);
+      --line: rgba(148, 163, 184, 0.17);
+
+      --cyan: #22d3ee;
+      --blue: #38bdf8;
+      --green: #34d399;
+      --amber: #fbbf24;
+      --red: #fb7185;
+      --violet: #a78bfa;
+
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --dim: #64748b;
+
+      --shadow:
+        0 24px 80px rgba(0, 0, 0, 0.42),
+        0 0 40px rgba(34, 211, 238, 0.05);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      min-height: 100dvh;
+      background:
+        radial-gradient(
+          circle at 8% 0%,
+          rgba(34, 211, 238, 0.14),
+          transparent 28rem
+        ),
+        radial-gradient(
+          circle at 94% 8%,
+          rgba(167, 139, 250, 0.12),
+          transparent 25rem
+        ),
+        linear-gradient(180deg, #020617 0%, #07111f 55%, #020617 100%);
+      color: var(--text);
+      font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+    }
+
+    button,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    code,
+    pre,
+    .mono {
+      font-family:
+        "SFMono-Regular",
+        Consolas,
+        "Liberation Mono",
+        Menlo,
+        monospace;
+    }
+
+    .shell {
+      width: min(1240px, 100%);
+      margin: 0 auto;
+      padding:
+        0
+        clamp(1rem, 3vw, 2rem)
+        4rem;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+
+      padding:
+        max(0.85rem, env(safe-area-inset-top))
+        clamp(1rem, 3vw, 2rem)
+        0.85rem;
+
+      border-bottom: 1px solid var(--line);
+      background: rgba(2, 6, 23, 0.86);
+      backdrop-filter: blur(20px);
+    }
+
+    .brand-wrap {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .brand-mark {
+      position: relative;
+      width: 2.6rem;
+      height: 2.6rem;
+      flex: 0 0 auto;
+      border-radius: 0.85rem;
+      background:
+        linear-gradient(
+          145deg,
+          rgba(34, 211, 238, 0.3),
+          rgba(56, 189, 248, 0.08)
+        );
+      border: 1px solid rgba(34, 211, 238, 0.45);
+      box-shadow: 0 0 26px rgba(34, 211, 238, 0.18);
+      display: grid;
+      place-items: center;
+    }
+
+    .brand-mark::before {
+      content: "N";
+      color: var(--cyan);
+      font-weight: 900;
+      font-size: 1.25rem;
+    }
+
+    .brand-mark::after {
+      content: "";
+      position: absolute;
+      inset: 0.38rem;
+      border-radius: 0.55rem;
+      border: 1px solid rgba(167, 139, 250, 0.38);
+    }
+
+    .brand-title {
+      margin: 0;
+      color: var(--text);
+      font-size: clamp(0.95rem, 3.2vw, 1.2rem);
+      letter-spacing: 0.08em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .brand-subtitle {
+      margin-top: 0.18rem;
+      color: var(--muted);
+      font-size: 0.68rem;
+      letter-spacing: 0.05em;
+    }
+
+    .health-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      min-width: 0;
+      padding: 0.5rem 0.75rem;
+
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      border-radius: 999px;
+
+      background: rgba(15, 23, 42, 0.82);
+      color: var(--muted);
+
+      font: 700 0.68rem ui-monospace, monospace;
+      white-space: nowrap;
+    }
+
+    .health-dot {
+      width: 0.58rem;
+      height: 0.58rem;
+      border-radius: 999px;
+      background: var(--amber);
+      box-shadow: 0 0 14px rgba(251, 191, 36, 0.7);
+    }
+
+    .health-chip.online {
+      color: #a7f3d0;
+      border-color: rgba(52, 211, 153, 0.38);
+    }
+
+    .health-chip.online .health-dot {
+      background: var(--green);
+      box-shadow: 0 0 14px rgba(52, 211, 153, 0.8);
+    }
+
+    .health-chip.offline {
+      color: #fecdd3;
+      border-color: rgba(251, 113, 133, 0.4);
+    }
+
+    .health-chip.offline .health-dot {
+      background: var(--red);
+      box-shadow: 0 0 14px rgba(251, 113, 133, 0.8);
+    }
+
+    .hero {
+      padding: clamp(3.2rem, 8vw, 6.5rem) 0 2rem;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+
+      padding: 0.5rem 0.78rem;
+      margin-bottom: 1.3rem;
+
+      border: 1px solid rgba(34, 211, 238, 0.25);
+      border-radius: 999px;
+
+      color: #a5f3fc;
+      background: rgba(8, 47, 73, 0.26);
+      font: 700 0.7rem ui-monospace, monospace;
+      letter-spacing: 0.06em;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 0.48rem;
+      height: 0.48rem;
+      border-radius: 999px;
+      background: var(--cyan);
+      box-shadow: 0 0 15px rgba(34, 211, 238, 0.8);
+    }
+
+    .hero h2 {
+      max-width: 920px;
+      margin: 0;
+      font-size: clamp(2.25rem, 8vw, 5.4rem);
+      line-height: 0.98;
+      letter-spacing: -0.055em;
+    }
+
+    .hero-gradient {
+      background:
+        linear-gradient(
+          95deg,
+          #f8fafc 4%,
+          #67e8f9 43%,
+          #a78bfa 83%
+        );
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .hero-copy {
+      max-width: 780px;
+      margin: 1.5rem 0 0;
+      color: #cbd5e1;
+      font-size: clamp(1rem, 2.2vw, 1.2rem);
+      line-height: 1.75;
+    }
+
+    .truth-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+      margin-top: 1.4rem;
+    }
+
+    .truth-chip {
+      padding: 0.48rem 0.7rem;
+      border: 1px solid var(--line);
+      border-radius: 0.65rem;
+      background: rgba(15, 23, 42, 0.58);
+      color: var(--muted);
+      font: 700 0.66rem ui-monospace, monospace;
+    }
+
+    .truth-chip strong {
+      color: var(--green);
+    }
+
+    .grid {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .grid-main {
+      grid-template-columns:
+        minmax(0, 1.08fr)
+        minmax(320px, 0.92fr);
+      align-items: start;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 1.35rem;
+      background:
+        linear-gradient(
+          150deg,
+          rgba(15, 23, 42, 0.92),
+          rgba(7, 17, 31, 0.88)
+        );
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+
+      padding: 1rem 1.1rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .panel-title {
+      margin: 0;
+      font-size: 0.83rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .panel-meta {
+      color: var(--dim);
+      font: 700 0.65rem ui-monospace, monospace;
+      text-align: right;
+    }
+
+    .panel-body {
+      padding: 1.1rem;
+    }
+
+    .composer {
+      position: relative;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 155px;
+      resize: vertical;
+
+      padding: 1rem 1rem 3.5rem;
+
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 1rem;
+
+      outline: none;
+      color: var(--text);
+      background: rgba(2, 6, 23, 0.62);
+
+      line-height: 1.6;
+    }
+
+    textarea:focus {
+      border-color: rgba(34, 211, 238, 0.58);
+      box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.1);
+    }
+
+    .char-count {
+      position: absolute;
+      right: 0.9rem;
+      bottom: 0.8rem;
+
+      color: var(--dim);
+      font: 700 0.65rem ui-monospace, monospace;
+    }
+
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+      margin-top: 0.85rem;
+    }
+
+    .button {
+      min-height: 46px;
+      padding: 0.75rem 1rem;
+
+      border-radius: 0.88rem;
+      cursor: pointer;
+      font-weight: 850;
+
+      transition:
+        transform 150ms ease,
+        border-color 150ms ease,
+        opacity 150ms ease,
+        background 150ms ease;
+    }
+
+    .button:hover {
+      transform: translateY(-1px);
+    }
+
+    .button:active {
+      transform: translateY(0) scale(0.98);
+    }
+
+    .button:disabled {
+      opacity: 0.48;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .button-primary {
+      flex: 1 1 180px;
+      color: #02131a;
+      background:
+        linear-gradient(120deg, var(--cyan), var(--blue));
+      box-shadow: 0 12px 30px rgba(34, 211, 238, 0.16);
+    }
+
+    .button-secondary {
+      color: var(--text);
+      background: rgba(30, 41, 59, 0.8);
+      border: 1px solid rgba(148, 163, 184, 0.22);
+    }
+
+    .button-voice {
+      min-width: 48px;
+      padding-inline: 0.85rem;
+      color: #ddd6fe;
+      background: rgba(76, 29, 149, 0.26);
+      border: 1px solid rgba(167, 139, 250, 0.3);
+    }
+
+    .button-voice.listening {
+      color: #fecdd3;
+      background: rgba(136, 19, 55, 0.34);
+      border-color: rgba(251, 113, 133, 0.45);
+      animation: voicePulse 1.25s ease-in-out infinite;
+    }
+
+    .demo-label {
+      margin: 1.3rem 0 0.7rem;
+      color: var(--muted);
+      font: 700 0.67rem ui-monospace, monospace;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+
+    .demo-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.7rem;
+    }
+
+    .demo-button {
+      min-height: 88px;
+      padding: 0.9rem;
+
+      border: 1px solid rgba(148, 163, 184, 0.17);
+      border-radius: 0.95rem;
+
+      color: var(--text);
+      background: rgba(15, 23, 42, 0.65);
+      text-align: left;
+      cursor: pointer;
+
+      transition:
+        transform 150ms ease,
+        border-color 150ms ease,
+        background 150ms ease;
+    }
+
+    .demo-button:hover {
+      transform: translateY(-2px);
+      border-color: rgba(34, 211, 238, 0.37);
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    .demo-button strong {
+      display: block;
+      margin-bottom: 0.35rem;
+      font-size: 0.85rem;
+    }
+
+    .demo-button span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.72rem;
+      line-height: 1.45;
+    }
+
+    .demo-button.safe strong {
+      color: var(--green);
+    }
+
+    .demo-button.unsafe strong {
+      color: var(--red);
+    }
+
+    .demo-button.ghz strong {
+      color: var(--cyan);
+    }
+
+    .demo-button.status-demo strong {
+      color: var(--violet);
+    }
+
+    .pipeline {
+      display: grid;
+      gap: 0.65rem;
+    }
+
+    .pipeline-step {
+      position: relative;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 0.8rem;
+
+      min-height: 72px;
+      padding: 0.8rem;
+
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 0.95rem;
+
+      background: rgba(2, 6, 23, 0.46);
+    }
+
+    .pipeline-step:not(:last-child)::after {
+      content: "";
+      position: absolute;
+      left: 1.72rem;
+      bottom: -0.66rem;
+      width: 1px;
+      height: 0.66rem;
+      background: rgba(148, 163, 184, 0.25);
+    }
+
+    .step-index {
+      width: 1.95rem;
+      height: 1.95rem;
+      display: grid;
+      place-items: center;
+      border-radius: 0.65rem;
+
+      color: var(--muted);
+      background: rgba(30, 41, 59, 0.85);
+      font: 800 0.68rem ui-monospace, monospace;
+    }
+
+    .step-copy strong {
+      display: block;
+      margin-bottom: 0.18rem;
+      font-size: 0.8rem;
+    }
+
+    .step-copy span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.7rem;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+    }
+
+    .step-state {
+      padding: 0.35rem 0.55rem;
+      border-radius: 999px;
+      color: var(--dim);
+      background: rgba(30, 41, 59, 0.7);
+      font: 800 0.62rem ui-monospace, monospace;
+      white-space: nowrap;
+    }
+
+    .pipeline-step.active {
+      border-color: rgba(34, 211, 238, 0.42);
+      box-shadow: inset 0 0 24px rgba(34, 211, 238, 0.05);
+    }
+
+    .pipeline-step.active .step-index {
+      color: #cffafe;
+      background: rgba(8, 145, 178, 0.32);
+    }
+
+    .pipeline-step.pass {
+      border-color: rgba(52, 211, 153, 0.35);
+    }
+
+    .pipeline-step.pass .step-index,
+    .pipeline-step.pass .step-state {
+      color: #a7f3d0;
+      background: rgba(6, 78, 59, 0.48);
+    }
+
+    .pipeline-step.reject {
+      border-color: rgba(251, 113, 133, 0.36);
+    }
+
+    .pipeline-step.reject .step-index,
+    .pipeline-step.reject .step-state {
+      color: #fecdd3;
+      background: rgba(136, 19, 55, 0.4);
+    }
+
+    .pipeline-step.neutral .step-state {
+      color: #fde68a;
+      background: rgba(120, 53, 15, 0.4);
+    }
+
+    .result-zone {
+      margin-top: 1rem;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.75rem;
+    }
+
+    .summary-card {
+      padding: 0.95rem;
+      border: 1px solid var(--line);
+      border-radius: 1rem;
+      background: rgba(15, 23, 42, 0.72);
+      min-width: 0;
+    }
+
+    .summary-card span {
+      display: block;
+      margin-bottom: 0.45rem;
+      color: var(--dim);
+      font: 700 0.62rem ui-monospace, monospace;
+      letter-spacing: 0.06em;
+    }
+
+    .summary-card strong {
+      display: block;
+      overflow-wrap: anywhere;
+      font-size: clamp(0.87rem, 2.6vw, 1.05rem);
+    }
+
+    .summary-card.approved strong,
+    .summary-card.pass strong {
+      color: var(--green);
+    }
+
+    .summary-card.rejected strong,
+    .summary-card.fail strong {
+      color: var(--red);
+    }
+
+    .details-grid {
+      display: grid;
+      grid-template-columns:
+        minmax(0, 0.92fr)
+        minmax(0, 1.08fr);
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .content-box {
+      min-width: 0;
+      padding: 1rem;
+      border: 1px solid var(--line);
+      border-radius: 1rem;
+      background: rgba(15, 23, 42, 0.66);
+    }
+
+    .content-label {
+      margin: 0 0 0.75rem;
+      color: var(--muted);
+      font: 800 0.66rem ui-monospace, monospace;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+
+    .explanation {
+      min-height: 5.6rem;
+      margin: 0;
+      color: #dbeafe;
+      line-height: 1.7;
+      overflow-wrap: anywhere;
+    }
+
+    .reason {
+      margin-top: 0.85rem;
+      padding-top: 0.85rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.55;
+    }
+
+    .marker-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      min-height: 5.6rem;
+      align-content: flex-start;
+    }
+
+    .marker {
+      max-width: 100%;
+      padding: 0.45rem 0.58rem;
+      border: 1px solid rgba(34, 211, 238, 0.18);
+      border-radius: 0.6rem;
+      color: #bae6fd;
+      background: rgba(8, 47, 73, 0.28);
+      font: 700 0.66rem ui-monospace, monospace;
+      overflow-wrap: anywhere;
+    }
+
+    .runtime-panel {
+      margin-top: 1rem;
+    }
+
+    .runtime-output {
+      width: 100%;
+      min-height: 180px;
+      max-height: 410px;
+      margin: 0;
+      padding: 1rem;
+
+      overflow: auto;
+
+      border: 0;
+      border-radius: 0 0 1rem 1rem;
+
+      color: #bbf7d0;
+      background: #020617;
+
+      font-size: 0.72rem;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .receipt-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 0.75rem;
+      align-items: end;
+    }
+
+    .receipt-field {
+      min-width: 0;
+    }
+
+    .receipt-field span {
+      display: block;
+      margin-bottom: 0.4rem;
+      color: var(--dim);
+      font: 700 0.61rem ui-monospace, monospace;
+    }
+
+    .receipt-value {
+      min-height: 46px;
+      padding: 0.7rem 0.8rem;
+      border: 1px solid var(--line);
+      border-radius: 0.75rem;
+      color: #c4b5fd;
+      background: rgba(2, 6, 23, 0.55);
+      font: 700 0.68rem ui-monospace, monospace;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+
+    .receipt-actions {
+      display: flex;
+      gap: 0.55rem;
+    }
+
+    .receipt-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 0.75rem 0.9rem;
+
+      border: 1px solid rgba(167, 139, 250, 0.28);
+      border-radius: 0.8rem;
+
+      color: #ddd6fe;
+      background: rgba(76, 29, 149, 0.24);
+      text-decoration: none;
+      font-weight: 800;
+    }
+
+    .receipt-link.disabled {
+      pointer-events: none;
+      opacity: 0.45;
+    }
+
+    .notice {
+      margin-top: 1rem;
+      padding: 0.85rem 1rem;
+
+      border-left: 3px solid var(--cyan);
+      border-radius: 0.7rem;
+
+      color: #bae6fd;
+      background: rgba(8, 47, 73, 0.24);
+      font-size: 0.78rem;
+      line-height: 1.55;
+    }
+
+    .notice.error {
+      border-left-color: var(--red);
+      color: #fecdd3;
+      background: rgba(136, 19, 55, 0.22);
+    }
+
+    .notice.success {
+      border-left-color: var(--green);
+      color: #a7f3d0;
+      background: rgba(6, 78, 59, 0.24);
+    }
+
+    .footer {
+      margin-top: 3rem;
+      padding: 1.4rem 0;
+
+      border-top: 1px solid var(--line);
+
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 0.8rem;
+
+      color: var(--dim);
+      font: 700 0.65rem ui-monospace, monospace;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @keyframes voicePulse {
+      0%,
+      100% {
+        box-shadow: 0 0 0 rgba(251, 113, 133, 0);
+      }
+
+      50% {
+        box-shadow: 0 0 22px rgba(251, 113, 133, 0.28);
+      }
+    }
+
+    @media (max-width: 900px) {
+      .grid-main,
+      .details-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 560px) {
+      .topbar {
+        align-items: flex-start;
+      }
+
+      .brand-subtitle {
+        display: none;
+      }
+
+      .health-chip {
+        max-width: 108px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .hero {
+        padding-top: 2.8rem;
+      }
+
+      .demo-grid,
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .receipt-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .receipt-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+      }
+    }
+
+    /* Judge Mode polish */
+    .judge-snapshot {
+      position: sticky;
+      top: 5.2rem;
+      z-index: 18;
+
+      display: grid;
+      grid-template-columns:
+        auto
+        repeat(5, minmax(0, 1fr));
+      gap: 0.65rem;
+      align-items: stretch;
+
+      margin: 0 0 1rem;
+      padding: 0.75rem;
+
+      border: 1px solid rgba(34, 211, 238, 0.25);
+      border-radius: 1.15rem;
+
+      background: rgba(2, 6, 23, 0.91);
+      box-shadow:
+        0 18px 50px rgba(0, 0, 0, 0.38),
+        0 0 28px rgba(34, 211, 238, 0.05);
+
+      backdrop-filter: blur(18px);
+    }
+
+    .judge-mode-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 118px;
+      padding: 0.65rem 0.8rem;
+
+      border: 1px solid rgba(167, 139, 250, 0.3);
+      border-radius: 0.85rem;
+
+      color: #ddd6fe;
+      background: rgba(76, 29, 149, 0.24);
+
+      font: 850 0.65rem ui-monospace, monospace;
+      letter-spacing: 0.06em;
+      text-align: center;
+    }
+
+    .judge-cell {
+      min-width: 0;
+      padding: 0.62rem 0.72rem;
+
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 0.82rem;
+
+      background: rgba(15, 23, 42, 0.75);
+    }
+
+    .judge-cell span {
+      display: block;
+      margin-bottom: 0.3rem;
+
+      color: var(--dim);
+      font: 750 0.57rem ui-monospace, monospace;
+      letter-spacing: 0.06em;
+    }
+
+    .judge-cell strong {
+      display: block;
+      color: var(--text);
+
+      font-size: 0.78rem;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+
+    .judge-snapshot.approved {
+      border-color: rgba(52, 211, 153, 0.4);
+    }
+
+    .judge-snapshot.approved
+    #judgeDecisionValue,
+    .judge-snapshot.approved
+    #judgeStatusValue,
+    .judge-snapshot.approved
+    #judgeReceiptValue {
+      color: var(--green);
+    }
+
+    .judge-snapshot.rejected {
+      border-color: rgba(251, 113, 133, 0.42);
+    }
+
+    .judge-snapshot.rejected
+    #judgeDecisionValue {
+      color: var(--red);
+    }
+
+    .judge-snapshot.failed
+    #judgeStatusValue {
+      color: var(--red);
+    }
+
+    .result-zone {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .result-zone > .summary-grid {
+      order: 1;
+    }
+
+    .result-zone > .details-grid {
+      order: 2;
+    }
+
+    .result-zone > .receipt-panel {
+      order: 3;
+    }
+
+    .result-zone > .runtime-details {
+      order: 4;
+    }
+
+    .runtime-details {
+      overflow: hidden;
+    }
+
+    .runtime-summary {
+      cursor: pointer;
+      user-select: none;
+      list-style: none;
+    }
+
+    .runtime-summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .runtime-toggle-label::after {
+      content: "EXPAND OUTPUT";
+      color: var(--cyan);
+    }
+
+    .runtime-details[open]
+    .runtime-toggle-label::after {
+      content: "COLLAPSE OUTPUT";
+    }
+
+    .runtime-summary:hover {
+      background: rgba(30, 41, 59, 0.35);
+    }
+
+    @media (max-width: 900px) {
+      .judge-snapshot {
+        position: static;
+        grid-template-columns:
+          repeat(2, minmax(0, 1fr));
+      }
+
+      .judge-mode-badge {
+        grid-column: 1 / -1;
+        min-height: 42px;
+      }
+
+      .hero {
+        padding-top: 2.2rem;
+        padding-bottom: 1.4rem;
+      }
+
+      .hero-copy {
+        line-height: 1.58;
+      }
+
+      .health-chip {
+        max-width: none;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .judge-snapshot {
+        padding: 0.62rem;
+        gap: 0.52rem;
+        border-radius: 1rem;
+      }
+
+      .judge-cell {
+        padding: 0.58rem;
+      }
+
+      .judge-cell strong {
+        font-size: 0.74rem;
+      }
+
+      .hero h2 {
+        font-size: clamp(2.2rem, 12vw, 3.5rem);
+      }
+
+      .truth-row {
+        gap: 0.5rem;
+      }
+
+      .truth-chip {
+        font-size: 0.61rem;
+      }
+    }
+
+
+    /* Inline NOVA reply */
+    .inline-reply {
+      display: none;
+      margin-top: 1rem;
+      padding: 1rem;
+
+      border: 1px solid rgba(34, 211, 238, 0.26);
+      border-radius: 1rem;
+
+      background:
+        linear-gradient(
+          145deg,
+          rgba(8, 47, 73, 0.36),
+          rgba(15, 23, 42, 0.92)
+        );
+
+      box-shadow:
+        inset 0 0 28px rgba(34, 211, 238, 0.04),
+        0 14px 32px rgba(0, 0, 0, 0.24);
+    }
+
+    .inline-reply.visible {
+      display: block;
+    }
+
+    .inline-reply.approved {
+      border-color: rgba(52, 211, 153, 0.45);
+    }
+
+    .inline-reply.rejected,
+    .inline-reply.failed {
+      border-color: rgba(251, 113, 133, 0.45);
+    }
+
+    .inline-reply.processing {
+      border-color: rgba(251, 191, 36, 0.4);
+    }
+
+    .inline-reply-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.8rem;
+    }
+
+    .inline-kicker {
+      display: block;
+      margin-bottom: 0.35rem;
+
+      color: var(--cyan);
+      font: 800 0.62rem ui-monospace, monospace;
+      letter-spacing: 0.09em;
+    }
+
+    .inline-reply-head strong {
+      display: block;
+      font-size: 1rem;
+      line-height: 1.45;
+    }
+
+    .inline-reply-badge {
+      flex: 0 0 auto;
+      padding: 0.4rem 0.58rem;
+
+      border-radius: 999px;
+
+      color: var(--muted);
+      background: rgba(30, 41, 59, 0.75);
+
+      font: 850 0.61rem ui-monospace, monospace;
+      white-space: nowrap;
+    }
+
+    .inline-reply-badge.approved,
+    .inline-reply-badge.pass {
+      color: #a7f3d0;
+      background: rgba(6, 78, 59, 0.55);
+    }
+
+    .inline-reply-badge.rejected,
+    .inline-reply-badge.fail {
+      color: #fecdd3;
+      background: rgba(136, 19, 55, 0.48);
+    }
+
+    .inline-reply-badge.processing {
+      color: #fde68a;
+      background: rgba(120, 53, 15, 0.48);
+    }
+
+    .inline-reply-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 0.55rem;
+      margin-top: 0.9rem;
+    }
+
+    .inline-reply-cell {
+      min-width: 0;
+      padding: 0.58rem;
+
+      border: 1px solid rgba(148, 163, 184, 0.15);
+      border-radius: 0.72rem;
+
+      background: rgba(2, 6, 23, 0.43);
+    }
+
+    .inline-reply-cell span {
+      display: block;
+      margin-bottom: 0.25rem;
+
+      color: var(--dim);
+      font: 750 0.53rem ui-monospace, monospace;
+      letter-spacing: 0.06em;
+    }
+
+    .inline-reply-cell strong {
+      display: block;
+      font-size: 0.72rem;
+      overflow-wrap: anywhere;
+    }
+
+    .inline-reply-explanation {
+      margin: 0.85rem 0 0;
+      color: #dbeafe;
+      font-size: 0.8rem;
+      line-height: 1.6;
+    }
+
+    .inline-reply-truth {
+      margin-top: 0.72rem;
+      color: var(--muted);
+      font: 700 0.61rem ui-monospace, monospace;
+      line-height: 1.5;
+    }
+
+    .inline-reply-proof {
+      margin-top: 0.8rem;
+      padding: 0.72rem;
+
+      border: 1px solid rgba(167, 139, 250, 0.2);
+      border-radius: 0.72rem;
+
+      background: rgba(76, 29, 149, 0.16);
+    }
+
+    .inline-reply-proof span {
+      display: block;
+      margin-bottom: 0.32rem;
+
+      color: var(--dim);
+      font: 750 0.55rem ui-monospace, monospace;
+    }
+
+    .inline-reply-proof code {
+      display: block;
+      color: #ddd6fe;
+      font-size: 0.69rem;
+      overflow-wrap: anywhere;
+    }
+
+    .inline-reply-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      margin-top: 0.8rem;
+    }
+
+    .inline-reply-actions .button {
+      flex: 1 1 150px;
+      min-height: 42px;
+      padding: 0.65rem 0.8rem;
+      font-size: 0.75rem;
+    }
+
+    @media (max-width: 620px) {
+      .inline-reply-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .inline-reply-cell:last-child {
+        grid-column: 1 / -1;
+      }
+
+      .inline-reply-head {
+        align-items: center;
+      }
+    }
+
+  </style>
+</head>
+
+<body>
+  <header class="topbar">
+    <div class="brand-wrap">
+      <div class="brand-mark" aria-hidden="true"></div>
+
+      <div>
+        <h1 class="brand-title">NOVAKUTTY</h1>
+        <div class="brand-subtitle mono">
+          QBIT NOVA C · INTENT-TO-PROOF CONSOLE
+        </div>
+      </div>
+    </div>
+
+    <div id="healthChip" class="health-chip">
+      <span class="health-dot" aria-hidden="true"></span>
+      <span id="healthText">CHECKING CORE</span>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="hero">
+      <div class="eyebrow">
+        APPROVAL-FIRST SOFTWARE VIRTUAL QCPU
+      </div>
+
+      <h2>
+        Intent becomes
+        <span class="hero-gradient">verifiable proof.</span>
+      </h2>
+
+      <p class="hero-copy">
+        Novakutty converts a natural-language compute request into a bounded
+        QBIT NOVA C operation, approves or rejects it before execution, and
+        produces reproducible evidence of exactly what happened.
+      </p>
+
+      <div class="truth-row">
+        <div class="truth-chip">
+          HOST: <strong>CLASSICAL CPU</strong>
+        </div>
+
+        <div class="truth-chip">
+          PHYSICAL QPU: <strong>NO</strong>
+        </div>
+
+        <div class="truth-chip">
+          ARBITRARY SHELL: <strong>DENY</strong>
+        </div>
+
+        <div class="truth-chip">
+          PRIVILEGED ACTIONS:
+          <strong>OWNER APPROVAL REQUIRED</strong>
+        </div>
+      </div>
+    </section>
+
+
+    <section
+      id="judgeSnapshot"
+      class="judge-snapshot"
+      aria-label="Judge mode live verdict"
+    >
+      <div class="judge-mode-badge">
+        JUDGE MODE · LIVE VERDICT
+      </div>
+
+      <div class="judge-cell">
+        <span>INTENT</span>
+        <strong id="judgeIntentValue">WAITING</strong>
+      </div>
+
+      <div class="judge-cell">
+        <span>DECISION</span>
+        <strong id="judgeDecisionValue">WAITING</strong>
+      </div>
+
+      <div class="judge-cell">
+        <span>EXECUTED</span>
+        <strong id="judgeExecutionValue">NO</strong>
+      </div>
+
+      <div class="judge-cell">
+        <span>STATUS</span>
+        <strong id="judgeStatusValue">WAITING</strong>
+      </div>
+
+      <div class="judge-cell">
+        <span>EVIDENCE</span>
+        <strong id="judgeReceiptValue">WAITING</strong>
+      </div>
+    </section>
+
+    <section class="grid grid-main">
+      <article class="panel">
+        <header class="panel-head">
+          <h3 class="panel-title">Natural-language request</h3>
+
+          <div class="panel-meta">
+            CTRL / CMD + ENTER
+          </div>
+        </header>
+
+        <div class="panel-body">
+          <div class="composer">
+            <textarea
+              id="requestInput"
+              maxlength="500"
+              aria-label="Novakutty request"
+              placeholder="Example: Create and verify a 3-qbit GHZ workload"
+            ></textarea>
+
+            <div id="charCount" class="char-count">
+              0 / 500
+            </div>
+          </div>
+
+          <div class="action-row">
+            <button
+              id="runButton"
+              class="button button-primary"
+              type="button"
+            >
+              Run Intent-to-Proof
+            </button>
+
+            <button
+              id="voiceButton"
+              class="button button-voice"
+              type="button"
+              aria-label="Start voice input"
+            >
+              🎙
+            </button>
+
+            <button
+              id="clearButton"
+              class="button button-secondary"
+              type="button"
+            >
+              Clear
+            </button>
+          </div>
+
+
+          <section
+            id="inlineNovaReply"
+            class="inline-reply"
+            aria-live="polite"
+            aria-label="NOVA inline result"
+          >
+            <div class="inline-reply-head">
+              <div>
+                <span class="inline-kicker">
+                  NOVA REPLY
+                </span>
+
+                <strong id="inlineReplyHeadline">
+                  Waiting for a request.
+                </strong>
+              </div>
+
+              <span
+                id="inlineReplyBadge"
+                class="inline-reply-badge"
+              >
+                WAITING
+              </span>
+            </div>
+
+            <div class="inline-reply-grid">
+              <div class="inline-reply-cell">
+                <span>INTENT</span>
+                <strong id="inlineReplyIntent">
+                  WAITING
+                </strong>
+              </div>
+
+              <div class="inline-reply-cell">
+                <span>DECISION</span>
+                <strong id="inlineReplyDecision">
+                  WAITING
+                </strong>
+              </div>
+
+              <div class="inline-reply-cell">
+                <span>EXECUTED</span>
+                <strong id="inlineReplyExecuted">
+                  NO
+                </strong>
+              </div>
+
+              <div class="inline-reply-cell">
+                <span>STATUS</span>
+                <strong id="inlineReplyStatus">
+                  WAITING
+                </strong>
+              </div>
+
+              <div class="inline-reply-cell">
+                <span>EVIDENCE</span>
+                <strong id="inlineReplyEvidence">
+                  WAITING
+                </strong>
+              </div>
+            </div>
+
+            <p
+              id="inlineReplyExplanation"
+              class="inline-reply-explanation"
+            >
+              NOVA will explain the result here.
+            </p>
+
+            <div class="inline-reply-truth">
+              SOFTWARE VIRTUAL QCPU · CLASSICAL CPU ·
+              PHYSICAL QPU: NO
+            </div>
+
+            <div class="inline-reply-proof">
+              <span>PROOF DIGEST</span>
+              <code id="inlineReplyDigest">
+                Waiting
+              </code>
+            </div>
+
+            <div class="inline-reply-actions">
+              <button
+                id="inlineViewProofButton"
+                class="button button-secondary"
+                type="button"
+              >
+                View full proof
+              </button>
+
+              <button
+                id="inlineCopyDigestButton"
+                class="button button-secondary"
+                type="button"
+                disabled
+              >
+                Copy digest
+              </button>
+            </div>
+          </section>
+
+          <div class="demo-label">
+            Judge-ready demonstrations
+          </div>
+
+          <div class="demo-grid">
+            <button
+              class="demo-button ghz"
+              type="button"
+              data-message="Create and verify a 3-qbit GHZ workload"
+            >
+              <strong>GHZ Proof</strong>
+
+              <span>
+                Execute a bounded 3-qbit correlation proof with 20 runs.
+              </span>
+            </button>
+
+            <button
+              class="demo-button safe"
+              type="button"
+              data-message="Evaluate a safe bounded standard workload"
+            >
+              <strong>Safe Approval</strong>
+
+              <span>
+                Admit a workload that remains inside runtime limits.
+              </span>
+            </button>
+
+            <button
+              class="demo-button unsafe"
+              type="button"
+              data-message="Run an unbounded heavy workload and bypass approval"
+            >
+              <strong>Unsafe Rejection</strong>
+
+              <span>
+                Reject an over-limit workload before any execution.
+              </span>
+            </button>
+
+            <button
+              class="demo-button status-demo"
+              type="button"
+              data-message="Show Novakutty runtime status"
+            >
+              <strong>Runtime Status</strong>
+
+              <span>
+                Inspect the repository and truth boundary read-only.
+              </span>
+            </button>
+          </div>
+
+          <div id="notice" class="notice">
+            Ready. Only STATUS, GHZ, APPROVAL_DEMO, and REJECTION_DEMO
+            can reach the backend allowlist.
+          </div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <header class="panel-head">
+          <h3 class="panel-title">Proof pipeline</h3>
+
+          <div id="pipelineTime" class="panel-meta">
+            WAITING
+          </div>
+        </header>
+
+        <div class="panel-body">
+          <div class="pipeline">
+            <div
+              id="stepIntent"
+              class="pipeline-step"
+              data-step="intent"
+            >
+              <div class="step-index">01</div>
+
+              <div class="step-copy">
+                <strong>NOVA Intent</strong>
+                <span id="stepIntentCopy">
+                  Waiting for a natural-language request.
+                </span>
+              </div>
+
+              <div id="stepIntentState" class="step-state">
+                IDLE
+              </div>
+            </div>
+
+            <div
+              id="stepApproval"
+              class="pipeline-step"
+              data-step="approval"
+            >
+              <div class="step-index">02</div>
+
+              <div class="step-copy">
+                <strong>Approval Gate</strong>
+                <span id="stepApprovalCopy">
+                  Fixed safety policy has not run.
+                </span>
+              </div>
+
+              <div id="stepApprovalState" class="step-state">
+                IDLE
+              </div>
+            </div>
+
+            <div
+              id="stepExecution"
+              class="pipeline-step"
+              data-step="execution"
+            >
+              <div class="step-index">03</div>
+
+              <div class="step-copy">
+                <strong>QBIT NOVA C</strong>
+                <span id="stepExecutionCopy">
+                  No bounded workload has executed.
+                </span>
+              </div>
+
+              <div id="stepExecutionState" class="step-state">
+                IDLE
+              </div>
+            </div>
+
+            <div
+              id="stepEvidence"
+              class="pipeline-step"
+              data-step="evidence"
+            >
+              <div class="step-index">04</div>
+
+              <div class="step-copy">
+                <strong>Evidence Receipt</strong>
+                <span id="stepEvidenceCopy">
+                  No receipt has been generated.
+                </span>
+              </div>
+
+              <div id="stepEvidenceState" class="step-state">
+                IDLE
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <section id="fullProof" class="result-zone">
+      <div class="summary-grid">
+        <article id="intentCard" class="summary-card">
+          <span>DETECTED INTENT</span>
+          <strong id="intentValue">WAITING</strong>
+        </article>
+
+        <article id="decisionCard" class="summary-card">
+          <span>DECISION</span>
+          <strong id="decisionValue">WAITING</strong>
+        </article>
+
+        <article id="executionCard" class="summary-card">
+          <span>EXECUTED</span>
+          <strong id="executionValue">NO</strong>
+        </article>
+
+        <article id="statusCard" class="summary-card">
+          <span>PROOF STATUS</span>
+          <strong id="statusValue">WAITING</strong>
+        </article>
+      </div>
+
+      <div class="details-grid">
+        <article class="content-box">
+          <h3 class="content-label">EVE explanation</h3>
+
+          <p id="explanationText" class="explanation">
+            Run a request to see why NOVA approved or rejected it and what
+            QBIT NOVA C did next.
+          </p>
+
+          <div id="reasonText" class="reason">
+            Product boundary: software Virtual QCPU on classical hardware.
+          </div>
+        </article>
+
+        <article class="content-box">
+          <h3 class="content-label">Verified markers</h3>
+
+          <div id="markerList" class="marker-list">
+            <span class="marker">
+              ALLOWLIST=STATUS,GHZ,APPROVAL_DEMO,REJECTION_DEMO
+            </span>
+
+            <span class="marker">
+              ARBITRARY_SHELL=DENY
+            </span>
+          </div>
+        </article>
+      </div>
+
+      <details
+        id="runtimeDetails"
+        class="panel runtime-panel runtime-details"
+      >
+        <summary class="panel-head runtime-summary">
+          <h3
+            id="runtimeTitle"
+            class="panel-title"
+          >
+            QBIT NOVA C technical output
+          </h3>
+
+          <div class="panel-meta runtime-toggle-label"></div>
+        </summary>
+
+        <div
+          id="runtimeMeta"
+          class="panel-meta"
+          style="padding: 0.7rem 1rem; text-align: left;"
+        >
+          NO EXECUTION
+        </div>
+
+        <pre id="runtimeOutput" class="runtime-output">Waiting for a bounded request...</pre>
+      </details>
+
+      <article class="panel runtime-panel receipt-panel">
+        <header class="panel-head">
+          <h3 class="panel-title">Evidence receipt</h3>
+
+          <div class="panel-meta">
+            SHA-256 EVIDENCE DIGEST
+          </div>
+        </header>
+
+        <div class="panel-body">
+          <div class="receipt-grid">
+            <div class="receipt-field">
+              <span>RECEIPT PATH</span>
+
+              <div id="receiptPath" class="receipt-value">
+                No receipt generated
+              </div>
+            </div>
+
+            <div class="receipt-actions">
+              <a
+                id="receiptLink"
+                class="receipt-link disabled"
+                href="#"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                View
+              </a>
+
+              <button
+                id="copyDigestButton"
+                class="button button-secondary"
+                type="button"
+                disabled
+              >
+                Copy digest
+              </button>
+            </div>
+          </div>
+
+          <div class="receipt-field" style="margin-top: 0.85rem;">
+            <span>SHA-256</span>
+
+            <div id="receiptDigest" class="receipt-value">
+              Waiting
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <footer class="footer">
+      <span>CREATOR: UNIVERSAL DRAGON ASLAM</span>
+      <span>CORE: QBIT NOVA C</span>
+      <span>PRODUCT: NOVAKUTTY</span>
+    </footer>
+  </main>
+
+  <script>
+    "use strict";
+
+    const elements = {
+      healthChip: document.getElementById("healthChip"),
+      healthText: document.getElementById("healthText"),
+
+      requestInput: document.getElementById("requestInput"),
+      charCount: document.getElementById("charCount"),
+
+      runButton: document.getElementById("runButton"),
+      voiceButton: document.getElementById("voiceButton"),
+      clearButton: document.getElementById("clearButton"),
+
+      notice: document.getElementById("notice"),
+
+      inlineNovaReply:
+        document.getElementById("inlineNovaReply"),
+
+      inlineReplyHeadline:
+        document.getElementById("inlineReplyHeadline"),
+
+      inlineReplyBadge:
+        document.getElementById("inlineReplyBadge"),
+
+      inlineReplyIntent:
+        document.getElementById("inlineReplyIntent"),
+
+      inlineReplyDecision:
+        document.getElementById("inlineReplyDecision"),
+
+      inlineReplyExecuted:
+        document.getElementById("inlineReplyExecuted"),
+
+      inlineReplyStatus:
+        document.getElementById("inlineReplyStatus"),
+
+      inlineReplyEvidence:
+        document.getElementById("inlineReplyEvidence"),
+
+      inlineReplyExplanation:
+        document.getElementById("inlineReplyExplanation"),
+
+      inlineReplyDigest:
+        document.getElementById("inlineReplyDigest"),
+
+      inlineViewProofButton:
+        document.getElementById("inlineViewProofButton"),
+
+      inlineCopyDigestButton:
+        document.getElementById("inlineCopyDigestButton"),
+
+      pipelineTime: document.getElementById("pipelineTime"),
+
+      stepIntent: document.getElementById("stepIntent"),
+      stepApproval: document.getElementById("stepApproval"),
+      stepExecution: document.getElementById("stepExecution"),
+      stepEvidence: document.getElementById("stepEvidence"),
+
+      stepIntentCopy: document.getElementById("stepIntentCopy"),
+      stepApprovalCopy: document.getElementById("stepApprovalCopy"),
+      stepExecutionCopy: document.getElementById("stepExecutionCopy"),
+      stepEvidenceCopy: document.getElementById("stepEvidenceCopy"),
+
+      stepIntentState: document.getElementById("stepIntentState"),
+      stepApprovalState: document.getElementById("stepApprovalState"),
+      stepExecutionState: document.getElementById("stepExecutionState"),
+      stepEvidenceState: document.getElementById("stepEvidenceState"),
+
+      intentCard: document.getElementById("intentCard"),
+      decisionCard: document.getElementById("decisionCard"),
+      executionCard: document.getElementById("executionCard"),
+      statusCard: document.getElementById("statusCard"),
+
+      intentValue: document.getElementById("intentValue"),
+      decisionValue: document.getElementById("decisionValue"),
+      executionValue: document.getElementById("executionValue"),
+      statusValue: document.getElementById("statusValue"),
+
+      explanationText: document.getElementById("explanationText"),
+      reasonText: document.getElementById("reasonText"),
+      markerList: document.getElementById("markerList"),
+
+      runtimeTitle: document.getElementById("runtimeTitle"),
+      runtimeOutput: document.getElementById("runtimeOutput"),
+      runtimeMeta: document.getElementById("runtimeMeta"),
+
+      receiptPath: document.getElementById("receiptPath"),
+      receiptDigest: document.getElementById("receiptDigest"),
+      receiptLink: document.getElementById("receiptLink"),
+      copyDigestButton: document.getElementById("copyDigestButton")
+    };
+
+    const SpeechRecognitionClass =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    let recognition = null;
+    let isListening = false;
+    let isBusy = false;
+    let latestDigest = "";
+
+    function setNotice(message, type = "") {
+      elements.notice.textContent = message;
+      elements.notice.className = "notice";
+
+      if (type) {
+        elements.notice.classList.add(type);
+      }
+    }
+
+    function setHealth(state, text) {
+      elements.healthChip.className = "health-chip";
+
+      if (state) {
+        elements.healthChip.classList.add(state);
+      }
+
+      elements.healthText.textContent = text;
+    }
+
+    function setBusy(busy) {
+      isBusy = busy;
+
+      elements.runButton.disabled = busy;
+      elements.clearButton.disabled = busy;
+
+      document.querySelectorAll(".demo-button").forEach((button) => {
+        button.disabled = busy;
+      });
+
+      if (recognition) {
+        elements.voiceButton.disabled = busy;
+      }
+
+      elements.runButton.textContent =
+        busy
+          ? "Processing bounded request..."
+          : "Run Intent-to-Proof";
+    }
+
+    function setStep(
+      element,
+      stateElement,
+      copyElement,
+      state,
+      label,
+      copy
+    ) {
+      element.className = "pipeline-step";
+
+      if (state) {
+        element.classList.add(state);
+      }
+
+      stateElement.textContent = label;
+      copyElement.textContent = copy;
+    }
+
+    function resetPipeline() {
+      setStep(
+        elements.stepIntent,
+        elements.stepIntentState,
+        elements.stepIntentCopy,
+        "",
+        "IDLE",
+        "Waiting for a natural-language request."
+      );
+
+      setStep(
+        elements.stepApproval,
+        elements.stepApprovalState,
+        elements.stepApprovalCopy,
+        "",
+        "IDLE",
+        "Fixed safety policy has not run."
+      );
+
+      setStep(
+        elements.stepExecution,
+        elements.stepExecutionState,
+        elements.stepExecutionCopy,
+        "",
+        "IDLE",
+        "No bounded workload has executed."
+      );
+
+      setStep(
+        elements.stepEvidence,
+        elements.stepEvidenceState,
+        elements.stepEvidenceCopy,
+        "",
+        "IDLE",
+        "No receipt has been generated."
+      );
+
+      elements.pipelineTime.textContent = "WAITING";
+    }
+
+    function setPipelineProcessing(message) {
+      resetPipeline();
+
+      setStep(
+        elements.stepIntent,
+        elements.stepIntentState,
+        elements.stepIntentCopy,
+        "active",
+        "ANALYZING",
+        message
+      );
+
+      elements.pipelineTime.textContent = "PROCESSING";
+    }
+
+    function clearSummaryClasses() {
+      [
+        elements.intentCard,
+        elements.decisionCard,
+        elements.executionCard,
+        elements.statusCard
+      ].forEach((card) => {
+        card.classList.remove(
+          "approved",
+          "rejected",
+          "pass",
+          "fail"
+        );
+      });
+    }
+
+    function renderMarkers(markers) {
+      elements.markerList.replaceChildren();
+
+      const safeMarkers =
+        Array.isArray(markers) && markers.length
+          ? markers
+          : ["NO_MARKERS_RETURNED"];
+
+      safeMarkers.forEach((markerText) => {
+        const marker = document.createElement("span");
+        marker.className = "marker";
+        marker.textContent = String(markerText);
+        elements.markerList.appendChild(marker);
+      });
+    }
+
+    function renderReceipt(receipt) {
+      latestDigest = "";
+
+      if (
+        !receipt ||
+        typeof receipt.path !== "string" ||
+        typeof receipt.sha256 !== "string"
+      ) {
+        elements.receiptPath.textContent = "No receipt generated";
+        elements.receiptDigest.textContent = "Waiting";
+        elements.receiptLink.href = "#";
+        elements.receiptLink.classList.add("disabled");
+        elements.copyDigestButton.disabled = true;
+        return;
+      }
+
+      const path = receipt.path;
+      latestDigest = receipt.sha256;
+
+      elements.receiptPath.textContent = path;
+      elements.receiptDigest.textContent = latestDigest;
+
+      elements.receiptLink.href = "/" + path.replace(/^\/+/, "");
+      elements.receiptLink.classList.remove("disabled");
+
+      elements.copyDigestButton.disabled = false;
+    }
+
+
+    function updateJudgeSnapshot(data) {
+      const snapshot =
+        document.getElementById("judgeSnapshot");
+
+      const intent =
+        String(data.intent || "WAITING");
+
+      const decision =
+        String(data.decision || "WAITING");
+
+      const status =
+        String(data.status || "WAITING");
+
+      const executed =
+        data.executed === true;
+
+      const receiptCreated =
+        Boolean(data.receipt);
+
+      document.getElementById(
+        "judgeIntentValue"
+      ).textContent = intent;
+
+      document.getElementById(
+        "judgeDecisionValue"
+      ).textContent = decision;
+
+      document.getElementById(
+        "judgeExecutionValue"
+      ).textContent = executed ? "YES" : "NO";
+
+      document.getElementById(
+        "judgeStatusValue"
+      ).textContent = status;
+
+      document.getElementById(
+        "judgeReceiptValue"
+      ).textContent =
+        receiptCreated ? "CREATED" : "WAITING";
+
+      snapshot.classList.remove(
+        "approved",
+        "rejected",
+        "failed"
+      );
+
+      if (decision === "APPROVED") {
+        snapshot.classList.add("approved");
+      } else if (decision.includes("REJECTED")) {
+        snapshot.classList.add("rejected");
+      }
+
+      if (
+        status !== "WAITING" &&
+        status !== "PASS"
+      ) {
+        snapshot.classList.add("failed");
+      }
+    }
+
+
+
+    function forceCloseRuntimeOutput() {
+      const runtimeDetails =
+        document.getElementById("runtimeDetails");
+
+      if (!runtimeDetails) {
+        return;
+      }
+
+      runtimeDetails.open = false;
+      runtimeDetails.removeAttribute("open");
+    }
+
+    function scrollToInlineReply() {
+      if (
+        !window.matchMedia(
+          "(max-width: 900px)"
+        ).matches
+      ) {
+        return;
+      }
+
+      requestAnimationFrame(() => {
+        elements.inlineNovaReply.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+      });
+    }
+
+    function showInlineProcessing(message) {
+      elements.inlineNovaReply.className =
+        "inline-reply visible processing";
+
+      elements.inlineReplyHeadline.textContent =
+        "NOVA is evaluating the request.";
+
+      elements.inlineReplyBadge.className =
+        "inline-reply-badge processing";
+
+      elements.inlineReplyBadge.textContent =
+        "PROCESSING";
+
+      elements.inlineReplyIntent.textContent =
+        "ANALYZING";
+
+      elements.inlineReplyDecision.textContent =
+        "PENDING";
+
+      elements.inlineReplyExecuted.textContent =
+        "NO";
+
+      elements.inlineReplyStatus.textContent =
+        "WAITING";
+
+      elements.inlineReplyEvidence.textContent =
+        "WAITING";
+
+      elements.inlineReplyExplanation.textContent =
+        message;
+
+      elements.inlineReplyDigest.textContent =
+        "Receipt will be created after evaluation.";
+
+      elements.inlineCopyDigestButton.disabled = true;
+    }
+
+    function renderInlineReply(data) {
+      const intent =
+        String(data.intent || "UNKNOWN");
+
+      const decision =
+        String(data.decision || "UNKNOWN");
+
+      const status =
+        String(data.status || "UNKNOWN");
+
+      const executed =
+        data.executed === true;
+
+      const digest =
+        typeof data.receipt?.sha256 === "string"
+          ? data.receipt.sha256
+          : "";
+
+      elements.inlineNovaReply.className =
+        "inline-reply visible";
+
+      if (decision === "APPROVED") {
+        elements.inlineNovaReply.classList.add(
+          "approved"
+        );
+      } else if (decision.includes("REJECTED")) {
+        elements.inlineNovaReply.classList.add(
+          "rejected"
+        );
+      }
+
+      if (status !== "PASS") {
+        elements.inlineNovaReply.classList.add(
+          "failed"
+        );
+      }
+
+      elements.inlineReplyBadge.className =
+        "inline-reply-badge";
+
+      if (decision === "APPROVED") {
+        elements.inlineReplyBadge.classList.add(
+          status === "PASS" ? "pass" : "fail"
+        );
+      } else {
+        elements.inlineReplyBadge.classList.add(
+          "rejected"
+        );
+      }
+
+      elements.inlineReplyBadge.textContent =
+        status;
+
+      elements.inlineReplyIntent.textContent =
+        intent;
+
+      elements.inlineReplyDecision.textContent =
+        decision;
+
+      elements.inlineReplyExecuted.textContent =
+        executed ? "YES" : "NO";
+
+      elements.inlineReplyStatus.textContent =
+        status;
+
+      elements.inlineReplyEvidence.textContent =
+        digest ? "CREATED" : "MISSING";
+
+      if (
+        intent === "GHZ" &&
+        decision === "APPROVED" &&
+        status === "PASS"
+      ) {
+        elements.inlineReplyHeadline.textContent =
+          "Bounded GHZ proof completed successfully.";
+      } else if (intent === "REJECTION_DEMO") {
+        elements.inlineReplyHeadline.textContent =
+          "Unsafe workload rejected before execution.";
+      } else if (intent === "APPROVAL_DEMO") {
+        elements.inlineReplyHeadline.textContent =
+          "Standard workload admitted safely.";
+      } else if (intent === "STATUS") {
+        elements.inlineReplyHeadline.textContent =
+          "Read-only runtime status verified.";
+      } else {
+        elements.inlineReplyHeadline.textContent =
+          decision.includes("REJECTED")
+            ? "Request rejected safely."
+            : "Intent-to-Proof evaluation completed.";
+      }
+
+      elements.inlineReplyExplanation.textContent =
+        typeof data.explanation === "string"
+          ? data.explanation
+          : "No explanation returned.";
+
+      elements.inlineReplyDigest.textContent =
+        digest
+          ? digest.slice(0, 12) + "…"
+          : "No digest returned";
+
+      elements.inlineCopyDigestButton.disabled =
+        !digest;
+    }
+
+    function renderInlineError(message) {
+      elements.inlineNovaReply.className =
+        "inline-reply visible failed";
+
+      elements.inlineReplyHeadline.textContent =
+        "Request failed safely.";
+
+      elements.inlineReplyBadge.className =
+        "inline-reply-badge fail";
+
+      elements.inlineReplyBadge.textContent =
+        "ERROR";
+
+      elements.inlineReplyIntent.textContent =
+        "UNKNOWN";
+
+      elements.inlineReplyDecision.textContent =
+        "REJECTED";
+
+      elements.inlineReplyExecuted.textContent =
+        "NO";
+
+      elements.inlineReplyStatus.textContent =
+        "ERROR";
+
+      elements.inlineReplyEvidence.textContent =
+        "NOT CREATED";
+
+      elements.inlineReplyExplanation.textContent =
+        message;
+
+      elements.inlineReplyDigest.textContent =
+        "No digest";
+
+      elements.inlineCopyDigestButton.disabled = true;
+    }
+
+    function renderResult(data) {
+      clearSummaryClasses();
+
+      const intent = String(data.intent || "UNKNOWN");
+      const decision = String(data.decision || "UNKNOWN");
+      const status = String(data.status || "UNKNOWN");
+      const executed = data.executed === true;
+
+      updateJudgeSnapshot({
+        intent,
+        decision,
+        executed,
+        status,
+        receipt: data.receipt
+      });
+
+      renderInlineReply(data);
+
+      elements.intentValue.textContent = intent;
+      elements.decisionValue.textContent = decision;
+      elements.executionValue.textContent = executed ? "YES" : "NO";
+      elements.statusValue.textContent = status;
+
+      if (decision === "APPROVED") {
+        elements.decisionCard.classList.add("approved");
+      } else if (decision.includes("REJECTED")) {
+        elements.decisionCard.classList.add("rejected");
+      }
+
+      if (status === "PASS") {
+        elements.statusCard.classList.add("pass");
+      } else {
+        elements.statusCard.classList.add("fail");
+      }
+
+      if (executed) {
+        elements.executionCard.classList.add("approved");
+      } else {
+        elements.executionCard.classList.add("rejected");
+      }
+
+      elements.explanationText.textContent =
+        typeof data.explanation === "string"
+          ? data.explanation
+          : "No explanation returned.";
+
+      elements.reasonText.textContent =
+        typeof data.reason === "string"
+          ? data.reason
+          : "No reason returned.";
+
+      elements.runtimeOutput.textContent =
+        typeof data.runtime_output === "string" &&
+        data.runtime_output.trim()
+          ? data.runtime_output
+          : "No runtime workload was executed.";
+
+      if (
+        intent === "APPROVAL_DEMO" ||
+        intent === "REJECTION_DEMO"
+      ) {
+        elements.runtimeTitle.textContent =
+          "ADMISSION POLICY OUTPUT";
+
+        elements.runtimeMeta.textContent =
+          "POLICY EVALUATED=YES · WORKLOAD EXECUTED=NO";
+      } else if (intent === "STATUS") {
+        elements.runtimeTitle.textContent =
+          "READ-ONLY STATUS OUTPUT";
+
+        elements.runtimeMeta.textContent =
+          "READ-ONLY CHECK=YES";
+      } else {
+        elements.runtimeTitle.textContent =
+          "QBIT NOVA C TECHNICAL OUTPUT";
+
+        elements.runtimeMeta.textContent =
+          executed
+            ? "WORKLOAD EXECUTED=YES"
+            : "WORKLOAD EXECUTED=NO";
+      }
+
+      renderMarkers(data.markers);
+      renderReceipt(data.receipt);
+
+      setStep(
+        elements.stepIntent,
+        elements.stepIntentState,
+        elements.stepIntentCopy,
+        "pass",
+        intent,
+        "Natural-language request mapped to " + intent + "."
+      );
+
+      if (decision === "APPROVED") {
+        setStep(
+          elements.stepApproval,
+          elements.stepApprovalState,
+          elements.stepApprovalCopy,
+          "pass",
+          "APPROVED",
+          data.reason || "The request passed the approval boundary."
+        );
+      } else {
+        setStep(
+          elements.stepApproval,
+          elements.stepApprovalState,
+          elements.stepApprovalCopy,
+          "reject",
+          "REJECTED",
+          data.reason || "The request was blocked safely."
+        );
+      }
+
+      if (executed) {
+        setStep(
+          elements.stepExecution,
+          elements.stepExecutionState,
+          elements.stepExecutionCopy,
+          status === "PASS" ? "pass" : "reject",
+          status,
+          "A bounded allowlisted QBIT NOVA C operation executed."
+        );
+      } else {
+        setStep(
+          elements.stepExecution,
+          elements.stepExecutionState,
+          elements.stepExecutionCopy,
+          "neutral",
+          "NOT RUN",
+          decision === "APPROVED"
+            ? "Admission completed; execution remained a separate controlled step."
+            : "Execution was blocked before QBIT NOVA C could run."
+        );
+      }
+
+      if (data.receipt) {
+        setStep(
+          elements.stepEvidence,
+          elements.stepEvidenceState,
+          elements.stepEvidenceCopy,
+          "pass",
+          "CREATED",
+          "Evidence receipt and SHA-256 digest generated."
+        );
+      } else {
+        setStep(
+          elements.stepEvidence,
+          elements.stepEvidenceState,
+          elements.stepEvidenceCopy,
+          "reject",
+          "MISSING",
+          "No evidence receipt was returned."
+        );
+      }
+
+      elements.pipelineTime.textContent =
+        new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit"
+        });
+
+      setNotice(
+        decision === "APPROVED"
+          ? "Request approved. Novakutty completed the bounded proof pipeline."
+          : "Request rejected safely. Nothing outside the allowlist was executed.",
+        status === "PASS" ? "success" : "error"
+      );
+
+      forceCloseRuntimeOutput();
+
+      requestAnimationFrame(() => {
+        forceCloseRuntimeOutput();
+        scrollToInlineReply();
+      });
+
+      setTimeout(() => {
+        forceCloseRuntimeOutput();
+      }, 120);
+    }
+
+    async function runIntent(messageOverride = null) {
+      if (isBusy) {
+        return;
+      }
+
+      const message =
+        typeof messageOverride === "string"
+          ? messageOverride.trim()
+          : elements.requestInput.value.trim();
+
+      if (!message) {
+        setNotice(
+          "Enter a request or select one of the judge-ready demonstrations.",
+          "error"
+        );
+        elements.requestInput.focus();
+        return;
+      }
+
+      elements.requestInput.value = message;
+      updateCharacterCount();
+
+      setBusy(true);
+
+      forceCloseRuntimeOutput();
+      setPipelineProcessing(message);
+      showInlineProcessing(message);
+      scrollToInlineReply();
+
+      setNotice(
+        "NOVA is analyzing intent and applying the fixed approval boundary."
+      );
+
+      try {
+        const response = await fetch("/api/intent", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+          },
+          body: JSON.stringify({ message })
+        });
+
+        let data;
+
+        try {
+          data = await response.json();
+        } catch {
+          throw new Error("Backend returned invalid JSON.");
+        }
+
+        if (!response.ok || data.ok !== true) {
+          throw new Error(
+            typeof data.error === "string"
+              ? data.error
+              : "Intent-to-Proof request failed."
+          );
+        }
+
+        renderResult(data);
+      } catch (error) {
+        console.error("Intent-to-Proof error:", error);
+
+        const messageText =
+          error instanceof Error
+            ? error.message
+            : "Unknown backend error.";
+
+        setNotice(messageText, "error");
+        renderInlineError(messageText);
+
+        setStep(
+          elements.stepIntent,
+          elements.stepIntentState,
+          elements.stepIntentCopy,
+          "reject",
+          "ERROR",
+          messageText
+        );
+
+        elements.pipelineTime.textContent = "FAILED";
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    function updateCharacterCount() {
+      const length = elements.requestInput.value.length;
+      elements.charCount.textContent = length + " / 500";
+    }
+
+    function clearDashboard() {
+      if (isBusy) {
+        return;
+      }
+
+      elements.requestInput.value = "";
+      updateCharacterCount();
+
+      clearSummaryClasses();
+
+      elements.intentValue.textContent = "WAITING";
+      elements.decisionValue.textContent = "WAITING";
+      elements.executionValue.textContent = "NO";
+      elements.statusValue.textContent = "WAITING";
+
+      elements.inlineNovaReply.className =
+        "inline-reply";
+
+      elements.inlineReplyHeadline.textContent =
+        "Waiting for a request.";
+
+      elements.inlineReplyBadge.className =
+        "inline-reply-badge";
+
+      elements.inlineReplyBadge.textContent =
+        "WAITING";
+
+      elements.inlineReplyIntent.textContent =
+        "WAITING";
+
+      elements.inlineReplyDecision.textContent =
+        "WAITING";
+
+      elements.inlineReplyExecuted.textContent =
+        "NO";
+
+      elements.inlineReplyStatus.textContent =
+        "WAITING";
+
+      elements.inlineReplyEvidence.textContent =
+        "WAITING";
+
+      elements.inlineReplyExplanation.textContent =
+        "NOVA will explain the result here.";
+
+      elements.inlineReplyDigest.textContent =
+        "Waiting";
+
+      elements.inlineCopyDigestButton.disabled = true;
+
+      elements.runtimeTitle.textContent =
+        "QBIT NOVA C TECHNICAL OUTPUT";
+
+      updateJudgeSnapshot({
+        intent: "WAITING",
+        decision: "WAITING",
+        executed: false,
+        status: "WAITING",
+        receipt: null
+      });
+
+      forceCloseRuntimeOutput();
+
+      elements.explanationText.textContent =
+        "Run a request to see why NOVA approved or rejected it and what QBIT NOVA C did next.";
+
+      elements.reasonText.textContent =
+        "Product boundary: software Virtual QCPU on classical hardware.";
+
+      elements.runtimeOutput.textContent =
+        "Waiting for a bounded request...";
+
+      elements.runtimeMeta.textContent = "NO EXECUTION";
+
+      renderMarkers([
+        "ALLOWLIST=STATUS,GHZ,APPROVAL_DEMO,REJECTION_DEMO",
+        "ARBITRARY_SHELL=DENY"
+      ]);
+
+      renderReceipt(null);
+      resetPipeline();
+
+      setNotice(
+        "Ready. Only STATUS, GHZ, APPROVAL_DEMO, and REJECTION_DEMO can reach the backend allowlist."
+      );
+
+      elements.requestInput.focus();
+    }
+
+    async function checkHealth() {
+      setHealth("", "CHECKING CORE");
+
+      try {
+        const response = await fetch("/api/health", {
+          headers: {
+            "Accept": "application/json"
+          },
+          cache: "no-store"
+        });
+
+        const data = await response.json();
+
+        if (
+          !response.ok ||
+          data.ok !== true ||
+          data.repo_available !== true
+        ) {
+          throw new Error("Core unavailable");
+        }
+
+        setHealth("online", "CORE ONLINE");
+      } catch (error) {
+        console.error("Health check failed:", error);
+        setHealth("offline", "CORE OFFLINE");
+
+        setNotice(
+          "Intent backend is unavailable. Verify intent_server.py is running.",
+          "error"
+        );
+      }
+    }
+
+    if (SpeechRecognitionClass) {
+      recognition = new SpeechRecognitionClass();
+      recognition.continuous = false;
+      recognition.interimResults = true;
+      recognition.lang = "en-US";
+
+      recognition.addEventListener("start", () => {
+        isListening = true;
+        elements.voiceButton.classList.add("listening");
+        elements.voiceButton.textContent = "■";
+        setNotice("Listening for your Novakutty request...");
+      });
+
+      recognition.addEventListener("result", (event) => {
+        let transcript = "";
+
+        for (
+          let index = event.resultIndex;
+          index < event.results.length;
+          index++
+        ) {
+          transcript += event.results[index][0]?.transcript || "";
+        }
+
+        elements.requestInput.value = transcript.trim().slice(0, 500);
+        updateCharacterCount();
+      });
+
+      recognition.addEventListener("error", (event) => {
+        console.error("Speech recognition error:", event.error);
+        setNotice(
+          "Voice input could not complete. Text input remains available.",
+          "error"
+        );
+      });
+
+      recognition.addEventListener("end", () => {
+        isListening = false;
+        elements.voiceButton.classList.remove("listening");
+        elements.voiceButton.textContent = "🎙";
+      });
+    } else {
+      elements.voiceButton.disabled = true;
+      elements.voiceButton.title =
+        "Voice recognition is unavailable in this browser.";
+    }
+
+    elements.requestInput.addEventListener("input", updateCharacterCount);
+
+    elements.requestInput.addEventListener("keydown", (event) => {
+      if (
+        (event.ctrlKey || event.metaKey) &&
+        event.key === "Enter"
+      ) {
+        event.preventDefault();
+        runIntent();
+      }
+    });
+
+    elements.runButton.addEventListener("click", () => {
+      runIntent();
+    });
+
+    elements.clearButton.addEventListener("click", clearDashboard);
+
+    elements.voiceButton.addEventListener("click", () => {
+      if (!recognition || isBusy) {
+        return;
+      }
+
+      if (isListening) {
+        recognition.stop();
+      } else {
+        try {
+          recognition.start();
+        } catch (error) {
+          console.error("Voice start error:", error);
+        }
+      }
+    });
+
+    document.querySelectorAll(".demo-button").forEach((button) => {
+      button.addEventListener("click", () => {
+        const message = button.dataset.message || "";
+        runIntent(message);
+      });
+    });
+
+
+    elements.inlineViewProofButton.addEventListener(
+      "click",
+      () => {
+        document.getElementById(
+          "fullProof"
+        )?.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
+      }
+    );
+
+    elements.inlineCopyDigestButton.addEventListener(
+      "click",
+      async () => {
+        if (!latestDigest) {
+          return;
+        }
+
+        try {
+          await navigator.clipboard.writeText(
+            latestDigest
+          );
+
+          setNotice(
+            "Full Proof Passport digest copied.",
+            "success"
+          );
+        } catch {
+          setNotice(
+            "Clipboard unavailable. Open the full receipt to copy the digest.",
+            "error"
+          );
+        }
+      }
+    );
+
+    elements.copyDigestButton.addEventListener("click", async () => {
+      if (!latestDigest) {
+        return;
+      }
+
+      try {
+        await navigator.clipboard.writeText(latestDigest);
+        setNotice("Evidence digest copied.", "success");
+      } catch {
+        setNotice(
+          "Clipboard access was unavailable. Select the digest manually.",
+          "error"
+        );
+      }
+    });
+
+    updateCharacterCount();
+    resetPipeline();
+    forceCloseRuntimeOutput();
+    checkHealth();
+
+    window.addEventListener("pageshow", () => {
+      forceCloseRuntimeOutput();
+    });
+  </script>
+</body>
+</html>
